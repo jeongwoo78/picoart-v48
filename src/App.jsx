@@ -1,4 +1,4 @@
-// PicoArt v63 - Main App (새 흐름: 대카테고리 → 사진+세부선택 → 변환)
+// PicoArt v76 - Main App (원클릭 결과 처리 추가)
 import React, { useState } from 'react';
 import CategorySelection from './components/CategorySelection';
 import PhotoStyleScreen from './components/PhotoStyleScreen';
@@ -19,6 +19,9 @@ const App = () => {
   const [resultImage, setResultImage] = useState(null);
   const [aiSelectedArtist, setAiSelectedArtist] = useState(null);
   const [aiSelectedWork, setAiSelectedWork] = useState(null);
+  
+  // 원클릭 결과
+  const [fullTransformResults, setFullTransformResults] = useState(null);
 
   // 1단계: 대카테고리 선택
   const handleCategorySelect = (categoryId) => {
@@ -35,20 +38,32 @@ const App = () => {
 
   // 변환 완료
   const handleProcessingComplete = (style, resultImageUrl, result) => {
-    setResultImage(resultImageUrl);
-    
-    if (result && result.aiSelectedArtist) {
-      setAiSelectedArtist(result.aiSelectedArtist);
-      console.log('✅ App.jsx received aiSelectedArtist:', result.aiSelectedArtist);
-    } else {
-      console.log('⚠️ No aiSelectedArtist in result:', result);
-    }
-    
-    if (result && result.selected_work) {
-      setAiSelectedWork(result.selected_work);
-      console.log('✅ App.jsx received selected_work:', result.selected_work);
-    } else {
+    // 원클릭 변환인 경우
+    if (result && result.isFullTransform) {
+      setFullTransformResults(result.results);
+      setResultImage(null);
+      setAiSelectedArtist(null);
       setAiSelectedWork(null);
+      console.log('✅ App.jsx received fullTransform results:', result.results.length);
+    } else {
+      // 단일 변환인 경우
+      setFullTransformResults(null);
+      setResultImage(resultImageUrl);
+      
+      if (result && result.aiSelectedArtist) {
+        setAiSelectedArtist(result.aiSelectedArtist);
+        console.log('✅ App.jsx received aiSelectedArtist:', result.aiSelectedArtist);
+      } else {
+        setAiSelectedArtist(null);
+        console.log('⚠️ No aiSelectedArtist in result:', result);
+      }
+      
+      if (result && result.selected_work) {
+        setAiSelectedWork(result.selected_work);
+        console.log('✅ App.jsx received selected_work:', result.selected_work);
+      } else {
+        setAiSelectedWork(null);
+      }
     }
     
     setCurrentScreen('result');
@@ -63,6 +78,7 @@ const App = () => {
     setResultImage(null);
     setAiSelectedArtist(null);
     setAiSelectedWork(null);
+    setFullTransformResults(null);
   };
 
   // 뒤로가기 (photoStyle → category)
@@ -116,6 +132,7 @@ const App = () => {
               selectedStyle={selectedStyle}
               aiSelectedArtist={aiSelectedArtist}
               aiSelectedWork={aiSelectedWork}
+              fullTransformResults={fullTransformResults}
               onReset={handleReset}
               onGallery={() => {
                 handleReset();

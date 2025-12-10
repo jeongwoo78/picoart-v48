@@ -1,13 +1,13 @@
-// PicoArt v61 - ResultScreen
-// 거장 교육자료 통합본 사용 (1차+2차 = 42개)
-// 갤러리 자동 저장 기능 추가
-// 2025-12-09 업데이트
+// PicoArt v76 - ResultScreen
+// 원클릭 결과 갤러리 뷰 추가
+// 2025-12-10 업데이트
 
 import React, { useState, useEffect, useRef } from 'react';
 import BeforeAfter from './BeforeAfter';
 import { orientalEducation } from '../data/educationContent';
 import { movementsEducation, movementsOverview } from '../data/movementsEducation';
 import { mastersEducation } from '../data/mastersEducation';
+import { oneclickSecondaryEducation } from '../data/oneclickEducation';
 import { saveToGallery } from './GalleryScreen';
 
 
@@ -17,9 +17,19 @@ const ResultScreen = ({
   selectedStyle, 
   aiSelectedArtist,
   aiSelectedWork,
+  fullTransformResults,
   onReset,
   onGallery
 }) => {
+  
+  // ========== 원클릭 결과 처리 ==========
+  const isFullTransform = fullTransformResults && fullTransformResults.length > 0;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // 현재 보여줄 결과
+  const currentResult = isFullTransform ? fullTransformResults[currentIndex] : null;
+  const displayImage = isFullTransform ? currentResult?.resultUrl : resultImage;
+  const displayArtist = isFullTransform ? currentResult?.aiSelectedArtist : aiSelectedArtist;
   
   // ========== State ==========
   const [showInfo, setShowInfo] = useState(true);
@@ -31,7 +41,30 @@ const ResultScreen = ({
 
   // ========== 갤러리 자동 저장 ==========
   useEffect(() => {
-    // 이미 저장했으면 스킵
+    // 원클릭은 별도 저장 로직
+    if (isFullTransform) {
+      // 모든 결과 저장
+      const saveAllResults = async () => {
+        for (const result of fullTransformResults) {
+          if (result.success && result.resultUrl) {
+            const styleName = result.aiSelectedArtist || result.style?.name || '변환 이미지';
+            const categoryName = selectedStyle?.category === 'movements' ? '미술사조' 
+              : selectedStyle?.category === 'masters' ? '거장' 
+              : selectedStyle?.category === 'oriental' ? '동양화' 
+              : '';
+            await saveToGallery(result.resultUrl, styleName, categoryName);
+          }
+        }
+        console.log('✅ 원클릭 결과 모두 갤러리에 저장됨');
+      };
+      if (!hasSavedRef.current) {
+        hasSavedRef.current = true;
+        saveAllResults();
+      }
+      return;
+    }
+    
+    // 단일 변환: 기존 로직
     if (hasSavedRef.current || !resultImage) return;
     
     const saveToGalleryAsync = async () => {
@@ -57,7 +90,7 @@ const ResultScreen = ({
     };
     
     saveToGalleryAsync();
-  }, [resultImage, selectedStyle, aiSelectedArtist]);
+  }, [resultImage, selectedStyle, aiSelectedArtist, fullTransformResults, isFullTransform]);
 
 
   // ========== Effects ==========
@@ -862,15 +895,47 @@ const ResultScreen = ({
         <div className="result-header">
           <h1>✨ 완성!</h1>
           <p className="result-subtitle">
-            {selectedStyle.name} 스타일로 변환되었습니다
+            {isFullTransform 
+              ? `${selectedStyle.name} (${currentIndex + 1}/${fullTransformResults.length})`
+              : `${selectedStyle.name} 스타일로 변환되었습니다`
+            }
           </p>
         </div>
+
+        {/* 원클릭 네비게이션 */}
+        {isFullTransform && (
+          <div className="fullTransform-nav">
+            <button 
+              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+              disabled={currentIndex === 0}
+              className="nav-btn"
+            >
+              ◀ 이전
+            </button>
+            <div className="nav-dots">
+              {fullTransformResults.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`nav-dot ${idx === currentIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentIndex(idx)}
+                />
+              ))}
+            </div>
+            <button 
+              onClick={() => setCurrentIndex(i => Math.min(fullTransformResults.length - 1, i + 1))}
+              disabled={currentIndex === fullTransformResults.length - 1}
+              className="nav-btn"
+            >
+              다음 ▶
+            </button>
+          </div>
+        )}
 
         {/* Before/After Slider */}
         <div className="comparison-wrapper">
           <BeforeAfter 
             beforeImage={URL.createObjectURL(originalPhoto)}
-            afterImage={resultImage}
+            afterImage={displayImage}
           />
         </div>
 
@@ -891,13 +956,13 @@ const ResultScreen = ({
             {/* Card Header */}
             <div className="card-header">
               <div className="technique-icon">
-                {selectedStyle.icon || '🎨'}
+                {isFullTransform ? (currentResult?.style?.icon || '🎨') : (selectedStyle.icon || '🎨')}
               </div>
               <div>
-                <h2>{selectedStyle.name}</h2>
+                <h2>{isFullTransform ? (currentResult?.style?.name || selectedStyle.name) : selectedStyle.name}</h2>
                 <p className="technique-subtitle">
                   <span className="artist-name">
-                    {formatArtistName(aiSelectedArtist)}
+                    {formatArtistName(displayArtist)}
                   </span>
                   {selectedStyle.category === 'neoclassicism_vs_romanticism_vs_realism' && aiSelectedArtist && (() => {
                     const movement = getSpecificMovement(aiSelectedArtist);
@@ -1298,6 +1363,45 @@ const ResultScreen = ({
           .action-buttons {
             grid-template-columns: 1fr;
           }
+        }
+
+        /* 원클릭 네비게이션 */
+        .fullTransform-nav {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+        .nav-btn {
+          padding: 8px 16px;
+          background: #667eea;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          cursor: pointer;
+        }
+        .nav-btn:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
+        .nav-dots {
+          display: flex;
+          gap: 6px;
+        }
+        .nav-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          border: none;
+          background: #ddd;
+          cursor: pointer;
+          padding: 0;
+        }
+        .nav-dot.active {
+          background: #667eea;
+          transform: scale(1.3);
         }
       `}</style>
     </div>
