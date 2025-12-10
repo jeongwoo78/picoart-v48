@@ -116,7 +116,11 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   };
 
   // 원클릭 1차 교육
-  const getPrimaryEducation = () => oneclickPrimaryEducation[category];
+  const getPrimaryEducation = () => {
+    console.log('🎓 getPrimaryEducation called, category:', category);
+    console.log('🎓 oneclickPrimaryEducation[category]:', oneclickPrimaryEducation[category]);
+    return oneclickPrimaryEducation[category];
+  };
 
   // 원클릭 2차 교육 (결과별)
   const getSecondaryEducation = (result) => {
@@ -158,9 +162,15 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       normalize(clean.toLowerCase().replace(/\s+/g, '')),
     ].filter(Boolean);
     
+    console.log('🔍 artistNameToKey:', artistName, '→ patterns:', patterns);
+    
     for (const p of patterns) {
-      if (oneclickSecondaryEducation[p]) return p;
+      if (oneclickSecondaryEducation[p]) {
+        console.log('✅ Found key:', p);
+        return p;
+      }
     }
+    console.log('❌ No key found for:', artistName);
     return null;
   };
 

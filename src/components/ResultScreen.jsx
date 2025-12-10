@@ -931,13 +931,22 @@ const ResultScreen = ({
           </div>
         )}
 
-        {/* Before/After Slider */}
-        <div className="comparison-wrapper">
-          <BeforeAfter 
-            beforeImage={URL.createObjectURL(originalPhoto)}
-            afterImage={displayImage}
-          />
-        </div>
+        {/* 원클릭: 이미지만 표시 */}
+        {isFullTransform && (
+          <div className="result-image-wrapper">
+            <img src={displayImage} alt="변환 결과" className="result-image" />
+          </div>
+        )}
+
+        {/* 단일 변환: Before/After Slider */}
+        {!isFullTransform && (
+          <div className="comparison-wrapper">
+            <BeforeAfter 
+              beforeImage={URL.createObjectURL(originalPhoto)}
+              afterImage={displayImage}
+            />
+          </div>
+        )}
 
         {/* Toggle Button */}
         <div className="info-toggle">
@@ -1402,6 +1411,18 @@ const ResultScreen = ({
         .nav-dot.active {
           background: #667eea;
           transform: scale(1.3);
+        }
+        
+        /* 원클릭 이미지 */
+        .result-image-wrapper {
+          margin-bottom: 16px;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .result-image {
+          width: 100%;
+          display: block;
         }
       `}</style>
     </div>
