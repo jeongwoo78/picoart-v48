@@ -106,7 +106,8 @@ const ResultScreen = ({
   const getOneclickEducationKey = (artistName) => {
     if (!artistName) return null;
     
-    const koreanToEnglish = {
+    const nameMapping = {
+      // 거장 - 한글
       '반 고흐': 'vangogh',
       '고흐': 'vangogh',
       '클림트': 'klimt',
@@ -117,6 +118,8 @@ const ResultScreen = ({
       '프리다': 'frida',
       '앤디 워홀': 'warhol',
       '워홀': 'warhol',
+      
+      // 동양화
       'Korean Pungsokdo': 'korean-genre',
       'Korean Minhwa': 'korean-minhwa',
       'Korean Jingyeong': 'korean-jingyeong',
@@ -124,11 +127,45 @@ const ResultScreen = ({
       'Chinese Ink Wash': 'chinese-ink',
       '일본 우키요에': 'japanese-ukiyoe',
       'Japanese Ukiyo-e': 'japanese-ukiyoe',
+      
+      // 미술사조 - 영어
+      'Classical Sculpture': 'ancient-greek-sculpture',
+      'CLASSICAL SCULPTURE': 'ancient-greek-sculpture',
+      'Byzantine': 'byzantine',
+      'BYZANTINE': 'byzantine',
+      'LEONARDO DA VINCI': 'leonardo',
+      'Leonardo da Vinci': 'leonardo',
+      'CARAVAGGIO': 'caravaggio',
+      'Caravaggio': 'caravaggio',
+      'François Boucher': 'boucher',
+      'FRANCOIS BOUCHER': 'boucher',
+      'Francisco Goya': 'goya',
+      'FRANCISCO GOYA': 'goya',
+      'RENOIR': 'renoir',
+      'Renoir': 'renoir',
+      'CEZANNE': 'cezanne',
+      'Cézanne': 'cezanne',
+      'Paul Cézanne': 'cezanne',
+      'MATISSE': 'matisse',
+      'Matisse': 'matisse',
+      'MUNCH': 'munch',
+      'Munch': 'munch',
+      'WARHOL': 'warhol',
+      'Warhol': 'warhol',
+      'VAN GOGH': 'vangogh',
+      'Van Gogh': 'vangogh',
+      'KLIMT': 'klimt',
+      'Klimt': 'klimt',
+      'PICASSO': 'picasso',
+      'Picasso': 'picasso',
+      'FRIDA': 'frida',
+      'Frida': 'frida',
+      'Frida Kahlo': 'frida',
     };
     
     // 1. 직접 매핑
-    if (koreanToEnglish[artistName] && oneclickSecondaryEducation[koreanToEnglish[artistName]]) {
-      return koreanToEnglish[artistName];
+    if (nameMapping[artistName] && oneclickSecondaryEducation[nameMapping[artistName]]) {
+      return nameMapping[artistName];
     }
     
     // 2. 소문자 변환
@@ -958,35 +995,6 @@ const ResultScreen = ({
           </p>
         </div>
 
-        {/* 원클릭 네비게이션 */}
-        {isFullTransform && (
-          <div className="fullTransform-nav">
-            <button 
-              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
-              className="nav-btn"
-            >
-              ◀ 이전
-            </button>
-            <div className="nav-dots">
-              {fullTransformResults.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`nav-dot ${idx === currentIndex ? 'active' : ''}`}
-                  onClick={() => setCurrentIndex(idx)}
-                />
-              ))}
-            </div>
-            <button 
-              onClick={() => setCurrentIndex(i => Math.min(fullTransformResults.length - 1, i + 1))}
-              disabled={currentIndex === fullTransformResults.length - 1}
-              className="nav-btn"
-            >
-              다음 ▶
-            </button>
-          </div>
-        )}
-
         {/* 원클릭: 이미지만 표시 */}
         {isFullTransform && (
           <div className="result-image-wrapper">
@@ -1084,6 +1092,35 @@ const ResultScreen = ({
               )}
             </div>
             
+          </div>
+        )}
+
+        {/* 원클릭 네비게이션 (교육자료 하단) */}
+        {isFullTransform && (
+          <div className="fullTransform-nav">
+            <button 
+              onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
+              disabled={currentIndex === 0}
+              className="nav-btn"
+            >
+              ◀ 이전
+            </button>
+            <div className="nav-dots">
+              {fullTransformResults.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`nav-dot ${idx === currentIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentIndex(idx)}
+                />
+              ))}
+            </div>
+            <button 
+              onClick={() => setCurrentIndex(i => Math.min(fullTransformResults.length - 1, i + 1))}
+              disabled={currentIndex === fullTransformResults.length - 1}
+              className="nav-btn"
+            >
+              다음 ▶
+            </button>
           </div>
         )}
 

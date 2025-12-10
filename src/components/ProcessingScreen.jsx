@@ -149,8 +149,9 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   const artistNameToKey = (artistName) => {
     if (!artistName) return null;
     
-    // 한글→영어 매핑
-    const koreanToEnglish = {
+    // 이름 매핑 (한글 + 영어)
+    const nameMapping = {
+      // 거장 - 한글
       '반 고흐': 'vangogh',
       '고흐': 'vangogh',
       '클림트': 'klimt',
@@ -161,6 +162,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       '프리다': 'frida',
       '앤디 워홀': 'warhol',
       '워홀': 'warhol',
+      
       // 동양화
       'Korean Pungsokdo': 'korean-genre',
       'Korean Minhwa': 'korean-minhwa',
@@ -169,13 +171,47 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       'Chinese Ink Wash': 'chinese-ink',
       '일본 우키요에': 'japanese-ukiyoe',
       'Japanese Ukiyo-e': 'japanese-ukiyoe',
+      
+      // 미술사조 - 영어
+      'Classical Sculpture': 'ancient-greek-sculpture',
+      'CLASSICAL SCULPTURE': 'ancient-greek-sculpture',
+      'Byzantine': 'byzantine',
+      'BYZANTINE': 'byzantine',
+      'LEONARDO DA VINCI': 'leonardo',
+      'Leonardo da Vinci': 'leonardo',
+      'CARAVAGGIO': 'caravaggio',
+      'Caravaggio': 'caravaggio',
+      'François Boucher': 'boucher',
+      'FRANCOIS BOUCHER': 'boucher',
+      'Francisco Goya': 'goya',
+      'FRANCISCO GOYA': 'goya',
+      'RENOIR': 'renoir',
+      'Renoir': 'renoir',
+      'CEZANNE': 'cezanne',
+      'Cézanne': 'cezanne',
+      'Paul Cézanne': 'cezanne',
+      'MATISSE': 'matisse',
+      'Matisse': 'matisse',
+      'MUNCH': 'munch',
+      'Munch': 'munch',
+      'WARHOL': 'warhol',
+      'Warhol': 'warhol',
+      'VAN GOGH': 'vangogh',
+      'Van Gogh': 'vangogh',
+      'KLIMT': 'klimt',
+      'Klimt': 'klimt',
+      'PICASSO': 'picasso',
+      'Picasso': 'picasso',
+      'FRIDA': 'frida',
+      'Frida': 'frida',
+      'Frida Kahlo': 'frida',
     };
     
     // 1. 직접 매핑 확인
-    if (koreanToEnglish[artistName]) {
-      const key = koreanToEnglish[artistName];
+    if (nameMapping[artistName]) {
+      const key = nameMapping[artistName];
       if (oneclickSecondaryEducation[key]) {
-        console.log('✅ Found via korean mapping:', key);
+        console.log('✅ Found via mapping:', key);
         return key;
       }
     }
@@ -282,18 +318,50 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
               </div>
             )}
 
-            {/* 점 네비게이션 */}
-            <div className="dots">
-              <button className={`dot edu ${viewIndex === -1 ? 'active' : ''}`} onClick={handleBackToEducation}>📚</button>
-              {styles.map((_, idx) => (
-                <button 
-                  key={idx}
-                  className={`dot ${idx < completedCount ? 'done' : ''} ${viewIndex === idx ? 'active' : ''}`}
-                  onClick={() => handleDotClick(idx)}
-                  disabled={idx >= completedCount}
-                />
-              ))}
-              <span className="count">{completedCount}/{totalCount}</span>
+            {/* 점 네비게이션 + 이전/다음 버튼 */}
+            <div className="dots-nav">
+              <button 
+                className="nav-btn"
+                onClick={() => {
+                  if (viewIndex === -1 && completedCount > 0) {
+                    setViewIndex(completedCount - 1);
+                  } else if (viewIndex > 0) {
+                    setViewIndex(viewIndex - 1);
+                  } else if (viewIndex === 0) {
+                    setViewIndex(-1);
+                  }
+                }}
+                disabled={viewIndex === -1 && completedCount === 0}
+              >
+                ◀ 이전
+              </button>
+              
+              <div className="dots">
+                <button className={`dot edu ${viewIndex === -1 ? 'active' : ''}`} onClick={handleBackToEducation}>📚</button>
+                {styles.map((_, idx) => (
+                  <button 
+                    key={idx}
+                    className={`dot ${idx < completedCount ? 'done' : ''} ${viewIndex === idx ? 'active' : ''}`}
+                    onClick={() => handleDotClick(idx)}
+                    disabled={idx >= completedCount}
+                  />
+                ))}
+                <span className="count">{completedCount}/{totalCount}</span>
+              </div>
+              
+              <button 
+                className="nav-btn"
+                onClick={() => {
+                  if (viewIndex === -1 && completedCount > 0) {
+                    setViewIndex(0);
+                  } else if (viewIndex >= 0 && viewIndex < completedCount - 1) {
+                    setViewIndex(viewIndex + 1);
+                  }
+                }}
+                disabled={viewIndex >= completedCount - 1 || completedCount === 0}
+              >
+                다음 ▶
+              </button>
             </div>
           </>
         )}
@@ -380,12 +448,31 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         .preview img { width: 100%; display: block; }
         .ai-info { padding: 8px 12px; background: #e9ecef; font-size: 12px; color: #666; }
         
+        .dots-nav {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-top: 16px;
+        }
+        .dots-nav .nav-btn {
+          padding: 8px 14px;
+          background: #667eea;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 13px;
+          cursor: pointer;
+        }
+        .dots-nav .nav-btn:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
         .dots {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          margin-top: 16px;
           flex-wrap: wrap;
         }
         .dot {
