@@ -266,6 +266,7 @@ const ResultScreen = ({
         'GOGH': 'gogh',
         'Vincent van Gogh': 'gogh',
         'Cézanne': 'cezanne',
+        'CÉZANNE': 'cezanne',  // 악센트 버전
         'CEZANNE': 'cezanne',
         'Paul Cézanne': 'cezanne',
         'Gauguin': 'gauguin',
@@ -318,6 +319,18 @@ const ResultScreen = ({
         'Roy Lichtenstein': 'lichtenstein',
         'Keith Haring': 'keith-haring',
         'KEITH HARING': 'keith-haring',
+        // 한글 fallback (AI 타임아웃 시)
+        '르네상스': 'leonardo',
+        '바로크': 'caravaggio',
+        '로코코': 'watteau',
+        '신고전주의': 'jacques-louis-david',
+        '낭만주의': 'delacroix',
+        '사실주의': 'millet',
+        '인상주의': 'monet',
+        '후기인상주의': 'gogh',
+        '야수파': 'matisse',
+        '표현주의': 'munch',
+        '모더니즘': 'picasso',
       };
       
       const key = movementsArtistKeyMap[artistName];
@@ -337,6 +350,7 @@ const ResultScreen = ({
     // ========== 동양화: artistName으로 매칭 ==========
     if (category === 'oriental' && artistName) {
       const orientalKeyMap = {
+        '한국 전통화': 'korean-genre',  // fallback 기본값
         'Korean Minhwa': 'korean-minhwa',
         '민화': 'korean-minhwa',
         'Korean Pungsokdo': 'korean-genre',

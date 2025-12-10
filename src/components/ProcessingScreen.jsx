@@ -187,6 +187,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         'The Kiss': 'klimt-kiss',
         'The Tree of Life': 'klimt-treeoflife',
         'Judith': 'klimt-judith',
+        'Judith I': 'klimt-judith',
         'The Scream': 'munch-scream',
         'Madonna': 'munch-madonna',
         'The Dance': 'matisse-dance',
@@ -212,6 +213,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     if (resultCategory === 'oriental' && artistName) {
       const orientalKeyMap = {
         // 한국
+        '한국 전통화': 'korean-genre',  // fallback 기본값
         'Korean Minhwa': 'korean-minhwa',
         'Korean Pungsokdo': 'korean-genre',
         'Korean Jingyeong Landscape': 'korean-jingyeong',
@@ -310,6 +312,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         'GOGH': 'gogh',
         'Vincent van Gogh': 'gogh',
         'Cézanne': 'cezanne',
+        'CÉZANNE': 'cezanne',  // 악센트 버전
         'CEZANNE': 'cezanne',
         'Paul Cézanne': 'cezanne',
         'Gauguin': 'gauguin',
@@ -362,6 +365,18 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         'Roy Lichtenstein': 'lichtenstein',
         'Keith Haring': 'keith-haring',
         'KEITH HARING': 'keith-haring',
+        // 한글 fallback (AI 타임아웃 시)
+        '르네상스': 'leonardo',
+        '바로크': 'caravaggio',
+        '로코코': 'watteau',
+        '신고전주의': 'jacques-louis-david',
+        '낭만주의': 'delacroix',
+        '사실주의': 'millet',
+        '인상주의': 'monet',
+        '후기인상주의': 'gogh',
+        '야수파': 'matisse',
+        '표현주의': 'munch',
+        '모더니즘': 'picasso',
       };
       if (movementsKeyMap[artistName]) {
         return movementsKeyMap[artistName];

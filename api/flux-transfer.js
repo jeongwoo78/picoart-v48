@@ -604,7 +604,6 @@ Available Ancient Greek-Roman Styles (2가지):
    - NOT for: Outdoor portraits, casual outdoor photos, landscapes with people
    - Material: Pure white marble only (classical aesthetic)
    - Technique: Dynamic poses for sports, classical poses for indoor portraits
-   - Polychromy: Marble includes subtle painted details (eyes, lips, clothing)
    - Background: Simple plain neutral background (museum-like)
    - Aesthetic: Classical Greek/Roman white marble sculpture
 
