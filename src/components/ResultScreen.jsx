@@ -173,32 +173,49 @@ const ResultScreen = ({
     console.log('   - category:', selectedStyle.category);
     console.log('   - isFullTransform:', isFullTransform);
     console.log('   - displayArtist:', displayArtist);
+    console.log('   - aiSelectedArtist:', aiSelectedArtist);
     console.log('');
     
     setIsLoadingEducation(true);
     
     let content = null;
     
-    // 카테고리별 교육자료 로드 (원클릭/단일 동일 로직)
-    const category = isFullTransform ? selectedStyle.category : selectedStyle.category;
-    const artistForEducation = isFullTransform ? displayArtist : aiSelectedArtist;
-    
-    // 1. 동양화 (oriental)
-    if (category === 'oriental') {
-      console.log('📜 Loading oriental education...');
-      content = getOrientalEducation(artistForEducation);
+    // ========== 원클릭: oneclickSecondaryEducation 사용 ==========
+    if (isFullTransform && displayArtist) {
+      console.log('📜 ONECLICK MODE - using oneclickSecondaryEducation');
+      const key = getOneclickEducationKey(displayArtist);
+      console.log('   - displayArtist:', displayArtist);
+      console.log('   - key:', key);
+      if (key && oneclickSecondaryEducation[key]) {
+        content = oneclickSecondaryEducation[key].content;
+        console.log('✅ Found oneclick education for:', key);
+        console.log('   - content preview:', content?.substring(0, 50));
+      } else {
+        console.log('❌ No oneclick education found for key:', key);
+      }
     }
     
-    // 2. 미술사조 (movements)
-    else if (category === 'movements' || category !== 'masters') {
-      console.log('📜 Loading movements education...');
-      content = getMovementsEducation(artistForEducation);
-    }
-    
-    // 3. 거장 (masters)
-    else {
-      console.log('📜 Loading masters education...');
-      content = getMastersEducation(artistForEducation);
+    // ========== 단일 변환: 기존 교육자료 사용 ==========
+    if (!content && !isFullTransform) {
+      const category = selectedStyle.category;
+      
+      // 1. 동양화 (oriental)
+      if (category === 'oriental') {
+        console.log('📜 Loading oriental education...');
+        content = getOrientalEducation();
+      }
+      
+      // 2. 미술사조 (movements)
+      else if (category !== 'masters') {
+        console.log('📜 Loading movements education...');
+        content = getMovementsEducation();
+      }
+      
+      // 3. 거장 (masters)
+      else {
+        console.log('📜 Loading masters education...');
+        content = getMastersEducation();
+      }
     }
     
     // 결과 설정
