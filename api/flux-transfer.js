@@ -3907,7 +3907,10 @@ export default async function handler(req, res) {
         
         let fallbackKey = selectedStyle.category;
         
-        if (selectedStyle.category === 'masters') {
+        if (selectedStyle.category === 'movements') {
+          // 미술사조: id를 사용 (renaissance, baroque, impressionism 등)
+          fallbackKey = selectedStyle.id;
+        } else if (selectedStyle.category === 'masters') {
           fallbackKey = selectedStyle.id.replace('-master', '');
         } else if (selectedStyle.category === 'oriental') {
           fallbackKey = selectedStyle.id;
@@ -3941,7 +3944,10 @@ export default async function handler(req, res) {
       
       let fallbackKey = selectedStyle.category;
       
-      if (selectedStyle.category === 'masters') {
+      if (selectedStyle.category === 'movements') {
+        // 미술사조: id를 사용 (renaissance, baroque, impressionism 등)
+        fallbackKey = selectedStyle.id;
+      } else if (selectedStyle.category === 'masters') {
         fallbackKey = selectedStyle.id.replace('-master', '');
       } else if (selectedStyle.category === 'oriental') {
         fallbackKey = selectedStyle.id;

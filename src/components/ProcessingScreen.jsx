@@ -97,6 +97,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
           style,
           resultUrl: result.resultUrl,
           aiSelectedArtist: result.aiSelectedArtist,
+          selected_work: result.selected_work,  // 거장 모드: 선택된 작품
           success: true
         };
       } else {
@@ -207,7 +208,34 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       }
     }
     
-    // 미술사조/동양화: 성(lastName)으로 매칭
+    // 동양화: API 반환값 → 교육자료 키 매핑
+    if (resultCategory === 'oriental' && artistName) {
+      const orientalKeyMap = {
+        // 한국
+        'Korean Minhwa': 'korean-minhwa',
+        'Korean Pungsokdo': 'korean-genre',  // pungsokdo = 풍속화 = genre
+        'Korean Jingyeong Landscape': 'korean-jingyeong',
+        'Korean Jingyeong': 'korean-jingyeong',
+        '한국 민화': 'korean-minhwa',
+        '한국 풍속화': 'korean-genre',
+        '한국 진경산수': 'korean-jingyeong',
+        // 중국
+        'Chinese Ink Wash': 'chinese-ink',
+        'Chinese Gongbi': 'chinese-gongbi',
+        'Chinese Huaniao': 'chinese-gongbi',  // 화조화는 공필화와 유사
+        '중국 수묵산수': 'chinese-ink',
+        '중국 공필화': 'chinese-gongbi',
+        // 일본
+        '일본 우키요에': 'japanese-ukiyoe',
+        'Japanese Ukiyo-e': 'japanese-ukiyoe',
+        'Ukiyo-e': 'japanese-ukiyoe',
+      };
+      if (orientalKeyMap[artistName]) {
+        return orientalKeyMap[artistName];
+      }
+    }
+    
+    // 미술사조: 성(lastName)으로 매칭
     if (artistName) {
       const words = artistName.split(/[\s-]+/);
       const lastName = words[words.length - 1]?.toLowerCase();
