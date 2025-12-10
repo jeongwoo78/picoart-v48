@@ -213,7 +213,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       const orientalKeyMap = {
         // 한국
         'Korean Minhwa': 'korean-minhwa',
-        'Korean Pungsokdo': 'korean-genre',  // pungsokdo = 풍속화 = genre
+        'Korean Pungsokdo': 'korean-genre',
         'Korean Jingyeong Landscape': 'korean-jingyeong',
         'Korean Jingyeong': 'korean-jingyeong',
         '한국 민화': 'korean-minhwa',
@@ -222,7 +222,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         // 중국
         'Chinese Ink Wash': 'chinese-ink',
         'Chinese Gongbi': 'chinese-gongbi',
-        'Chinese Huaniao': 'chinese-gongbi',  // 화조화는 공필화와 유사
+        'Chinese Huaniao': 'chinese-gongbi',
         '중국 수묵산수': 'chinese-ink',
         '중국 공필화': 'chinese-gongbi',
         // 일본
@@ -235,7 +235,140 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       }
     }
     
-    // 미술사조: 성(lastName)으로 매칭
+    // 미술사조: API 반환값 → 교육자료 키 매핑
+    if (resultCategory === 'movements' && artistName) {
+      const movementsKeyMap = {
+        // 고대
+        'Classical Sculpture': 'ancient-greek-sculpture',
+        'Greek Sculpture': 'ancient-greek-sculpture',
+        'Roman Mosaic': 'roman-mosaic',
+        // 중세
+        'Byzantine': 'byzantine',
+        'Byzantine Mosaic': 'byzantine',
+        'Gothic': 'gothic',
+        'Gothic Stained Glass': 'gothic',
+        'Islamic Miniature': 'islamic-miniature',
+        'Islamic Geometry': 'islamic-miniature',
+        // 르네상스
+        'Leonardo da Vinci': 'leonardo',
+        'LEONARDO': 'leonardo',
+        'Michelangelo': 'michelangelo',
+        'MICHELANGELO': 'michelangelo',
+        'Raphael': 'raphael',
+        'RAPHAEL': 'raphael',
+        'Botticelli': 'botticelli',
+        'BOTTICELLI': 'botticelli',
+        'Titian': 'titian',
+        'TITIAN': 'titian',
+        // 바로크
+        'Caravaggio': 'caravaggio',
+        'CARAVAGGIO': 'caravaggio',
+        'Rembrandt': 'rembrandt',
+        'REMBRANDT': 'rembrandt',
+        'Vermeer': 'vermeer',
+        'VERMEER': 'vermeer',
+        'Velázquez': 'velazquez',
+        'VELÁZQUEZ': 'velazquez',
+        'Velazquez': 'velazquez',
+        'VELAZQUEZ': 'velazquez',
+        // 로코코
+        'Watteau': 'watteau',
+        'WATTEAU': 'watteau',
+        'Boucher': 'boucher',
+        'BOUCHER': 'boucher',
+        // 19세기
+        'Jacques-Louis David': 'jacques-louis-david',
+        'DAVID': 'jacques-louis-david',
+        'Ingres': 'ingres',
+        'INGRES': 'ingres',
+        'Jean-Auguste-Dominique Ingres': 'ingres',
+        'Turner': 'turner',
+        'TURNER': 'turner',
+        'Goya': 'goya',
+        'GOYA': 'goya',
+        'Delacroix': 'delacroix',
+        'DELACROIX': 'delacroix',
+        'Millet': 'millet',
+        'MILLET': 'millet',
+        'Manet': 'manet',
+        'MANET': 'manet',
+        // 인상주의
+        'Monet': 'monet',
+        'MONET': 'monet',
+        'Claude Monet': 'monet',
+        'Renoir': 'renoir',
+        'RENOIR': 'renoir',
+        'Pierre-Auguste Renoir': 'renoir',
+        'Degas': 'degas',
+        'DEGAS': 'degas',
+        'Edgar Degas': 'degas',
+        'Caillebotte': 'caillebotte',
+        'CAILLEBOTTE': 'caillebotte',
+        'Gustave Caillebotte': 'caillebotte',
+        // 후기인상주의
+        'Van Gogh': 'gogh',
+        'GOGH': 'gogh',
+        'Vincent van Gogh': 'gogh',
+        'Cézanne': 'cezanne',
+        'CEZANNE': 'cezanne',
+        'Paul Cézanne': 'cezanne',
+        'Gauguin': 'gauguin',
+        'GAUGUIN': 'gauguin',
+        'Paul Gauguin': 'gauguin',
+        'Signac': 'signac',
+        'SIGNAC': 'signac',
+        'Paul Signac': 'signac',
+        // 야수파
+        'Matisse': 'matisse',
+        'MATISSE': 'matisse',
+        'Henri Matisse': 'matisse',
+        'Derain': 'derain',
+        'DERAIN': 'derain',
+        'André Derain': 'derain',
+        'Vlaminck': 'vlaminck',
+        'VLAMINCK': 'vlaminck',
+        'Maurice de Vlaminck': 'vlaminck',
+        // 표현주의
+        'Munch': 'munch',
+        'MUNCH': 'munch',
+        'Edvard Munch': 'munch',
+        'Kokoschka': 'kokoschka',
+        'KOKOSCHKA': 'kokoschka',
+        'Oskar Kokoschka': 'kokoschka',
+        'Kirchner': 'kirchner',
+        'KIRCHNER': 'kirchner',
+        'Ernst Ludwig Kirchner': 'kirchner',
+        'Kandinsky': 'kandinsky',
+        'KANDINSKY': 'kandinsky',
+        'Wassily Kandinsky': 'kandinsky',
+        // 모더니즘
+        'Picasso': 'picasso',
+        'PICASSO': 'picasso',
+        'Pablo Picasso': 'picasso',
+        'Magritte': 'magritte',
+        'MAGRITTE': 'magritte',
+        'René Magritte': 'magritte',
+        'Miró': 'miro',
+        'MIRO': 'miro',
+        'Joan Miró': 'miro',
+        'Chagall': 'chagall',
+        'CHAGALL': 'chagall',
+        'Marc Chagall': 'chagall',
+        'Warhol': 'warhol',
+        'WARHOL': 'warhol',
+        'Andy Warhol': 'warhol',
+        'Lichtenstein': 'lichtenstein',
+        'LICHTENSTEIN': 'lichtenstein',
+        'Roy Lichtenstein': 'lichtenstein',
+        'Keith Haring': 'keith-haring',
+        'KEITH HARING': 'keith-haring',
+      };
+      if (movementsKeyMap[artistName]) {
+        return movementsKeyMap[artistName];
+      }
+    }
+    
+    // Fallback: 성(lastName)으로 매칭
     if (artistName) {
       const words = artistName.split(/[\s-]+/);
       const lastName = words[words.length - 1]?.toLowerCase();

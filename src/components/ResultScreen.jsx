@@ -223,6 +223,10 @@ const ResultScreen = ({
         'REMBRANDT': 'rembrandt',
         'Vermeer': 'vermeer',
         'VERMEER': 'vermeer',
+        'Velázquez': 'velazquez',
+        'VELÁZQUEZ': 'velazquez',
+        'Velazquez': 'velazquez',
+        'VELAZQUEZ': 'velazquez',
         // 로코코
         'Watteau': 'watteau',
         'WATTEAU': 'watteau',
