@@ -1,13 +1,17 @@
-// PicoArt v76 - ResultScreen
-// 원클릭 결과 갤러리 뷰 추가
-// 2025-12-10 업데이트
+// PicoArt v77 - ResultScreen
+// 원클릭 교육자료 매칭: 단일변환과 동일한 workKeyMap 로직 사용
+// 교육자료 파일만 분리된 원클릭 전용 파일 사용
+// 2025-12-11 업데이트
 
 import React, { useState, useEffect, useRef } from 'react';
 import BeforeAfter from './BeforeAfter';
 import { orientalEducation } from '../data/educationContent';
 import { movementsEducation, movementsOverview } from '../data/movementsEducation';
 import { mastersEducation } from '../data/mastersEducation';
-import { oneclickSecondaryEducation } from '../data/oneclickEducation';
+// 원클릭 전용 교육자료 (분리된 파일)
+import { oneclickMovementsSecondary } from '../data/oneclickMovementsEducation';
+import { oneclickMastersSecondary } from '../data/oneclickMastersEducation';
+import { oneclickOrientalSecondary } from '../data/oneclickOrientalEducation';
 import { saveToGallery } from './GalleryScreen';
 
 
@@ -30,6 +34,8 @@ const ResultScreen = ({
   const currentResult = isFullTransform ? fullTransformResults[currentIndex] : null;
   const displayImage = isFullTransform ? currentResult?.resultUrl : resultImage;
   const displayArtist = isFullTransform ? currentResult?.aiSelectedArtist : aiSelectedArtist;
+  const displayWork = isFullTransform ? currentResult?.selected_work : aiSelectedWork;
+  const displayCategory = isFullTransform ? currentResult?.style?.category : selectedStyle?.category;
   
   // ========== State ==========
   const [showInfo, setShowInfo] = useState(true);
@@ -102,66 +108,215 @@ const ResultScreen = ({
   }, [aiSelectedArtist, currentIndex]);
 
 
-  // ========== 원클릭용 키 매칭 (단순화) ==========
-  const getOneclickEducationKey = (artistName) => {
-    if (!artistName) return null;
+  // ========== 원클릭용 키 매칭 (단일변환과 동일한 workKeyMap 사용) ==========
+  const getOneclickEducationKey = (workName, artistName, category) => {
+    console.log('🔍 getOneclickEducationKey called:');
+    console.log('   - workName:', workName);
+    console.log('   - artistName:', artistName);
+    console.log('   - category:', category);
     
-    // 1. 소문자 변환 (공백 제거)
-    const lower = artistName.toLowerCase().replace(/\s+/g, '');
-    if (oneclickSecondaryEducation[lower]) {
-      console.log('✅ Lower found:', lower);
-      return lower;
+    // ========== 거장: workKeyMap으로 매칭 ==========
+    if (category === 'masters' && workName) {
+      const mastersWorkKeyMap = {
+        // 반 고흐
+        'The Starry Night': 'gogh-starrynight',
+        '별이 빛나는 밤': 'gogh-starrynight',
+        'Starry Night': 'gogh-starrynight',
+        'Sunflowers': 'gogh-sunflowers',
+        '해바라기': 'gogh-sunflowers',
+        'Self-Portrait': 'gogh-selfportrait',
+        '자화상': 'gogh-selfportrait',
+        
+        // 클림트
+        'The Kiss': 'klimt-kiss',
+        '키스': 'klimt-kiss',
+        'The Tree of Life': 'klimt-treeoflife',
+        '생명의 나무': 'klimt-treeoflife',
+        'Tree of Life': 'klimt-treeoflife',
+        'Judith I': 'klimt-judith',
+        'Judith': 'klimt-judith',
+        '유디트': 'klimt-judith',
+        
+        // 뭉크
+        'The Scream': 'munch-scream',
+        '절규': 'munch-scream',
+        'Scream': 'munch-scream',
+        'Madonna': 'munch-madonna',
+        '마돈나': 'munch-madonna',
+        
+        // 마티스
+        'The Dance': 'matisse-dance',
+        '춤': 'matisse-dance',
+        'Dance': 'matisse-dance',
+        'The Red Room': 'matisse-redroom',
+        '붉은 방': 'matisse-redroom',
+        'Red Room': 'matisse-redroom',
+        'Woman with a Hat': 'matisse-womanwithhat',
+        '모자를 쓴 여인': 'matisse-womanwithhat',
+        
+        // 피카소
+        'Les Demoiselles d\'Avignon': 'picasso-demoiselles',
+        '아비뇽의 처녀들': 'picasso-demoiselles',
+        'Demoiselles': 'picasso-demoiselles',
+        'Guernica': 'picasso-guernica',
+        '게르니카': 'picasso-guernica',
+        'Weeping Woman': 'picasso-weepingwoman',
+        '우는 여인': 'picasso-weepingwoman',
+        
+        // 프리다 칼로
+        'Me and My Parrots': 'frida-parrots',
+        '나와 앵무새들': 'frida-parrots',
+        'The Broken Column': 'frida-brokencolumn',
+        '부러진 기둥': 'frida-brokencolumn',
+        'Broken Column': 'frida-brokencolumn',
+        'Self-Portrait with Thorn Necklace': 'frida-thornnecklace',
+        '가시 목걸이와 벌새': 'frida-thornnecklace',
+        'Thorn Necklace': 'frida-thornnecklace',
+        'Self-Portrait with Monkeys': 'frida-monkeys',
+        '원숭이와 자화상': 'frida-monkeys',
+        
+        // 워홀
+        'Marilyn Monroe': 'warhol-marilyn',
+        '마릴린 먼로': 'warhol-marilyn',
+        'Marilyn': 'warhol-marilyn',
+        'Campbell\'s Soup Cans': 'warhol-soup',
+        '캠벨 수프 캔': 'warhol-soup',
+        'Soup Cans': 'warhol-soup',
+      };
+      
+      const key = mastersWorkKeyMap[workName];
+      if (key) {
+        console.log('✅ Masters workKeyMap matched:', key);
+        return key;
+      }
     }
     
-    // 2. 소문자 변환 (공백 → 대시)
-    const lowerDash = artistName.toLowerCase().replace(/\s+/g, '-');
-    if (oneclickSecondaryEducation[lowerDash]) {
-      console.log('✅ LowerDash found:', lowerDash);
-      return lowerDash;
-    }
-    
-    // 3. 마지막 단어 (성) 추출 - "Pierre-Auguste Renoir" → "renoir"
-    const words = artistName.split(/[\s-]+/);
-    if (words.length > 1) {
-      const lastName = words[words.length - 1].toLowerCase();
-      if (oneclickSecondaryEducation[lastName]) {
-        console.log('✅ LastName found:', lastName);
+    // ========== 미술사조: artistName으로 매칭 ==========
+    if (category === 'movements' && artistName) {
+      const movementsArtistKeyMap = {
+        // 고대
+        'Greek Sculpture': 'ancient-greek-sculpture',
+        'Roman Mosaic': 'roman-mosaic',
+        // 중세
+        'Byzantine': 'byzantine',
+        'Gothic': 'gothic',
+        'Islamic Miniature': 'islamic-miniature',
+        // 르네상스
+        'Leonardo da Vinci': 'leonardo',
+        'Michelangelo': 'michelangelo',
+        'Raphael': 'raphael',
+        'Botticelli': 'botticelli',
+        'Titian': 'titian',
+        // 바로크
+        'Caravaggio': 'caravaggio',
+        'Rembrandt': 'rembrandt',
+        'Vermeer': 'vermeer',
+        // 로코코
+        'Watteau': 'watteau',
+        'Boucher': 'boucher',
+        // 19세기
+        'Jacques-Louis David': 'jacques-louis-david',
+        'Ingres': 'ingres',
+        'Turner': 'turner',
+        'Goya': 'goya',
+        'Delacroix': 'delacroix',
+        'Millet': 'millet',
+        'Manet': 'manet',
+        // 인상주의
+        'Monet': 'monet',
+        'Claude Monet': 'monet',
+        'Renoir': 'renoir',
+        'Pierre-Auguste Renoir': 'renoir',
+        'Degas': 'degas',
+        'Edgar Degas': 'degas',
+        'Caillebotte': 'caillebotte',
+        'Gustave Caillebotte': 'caillebotte',
+        // 후기인상주의
+        'Van Gogh': 'gogh',
+        'Vincent van Gogh': 'gogh',
+        'Cézanne': 'cezanne',
+        'Paul Cézanne': 'cezanne',
+        'Gauguin': 'gauguin',
+        'Paul Gauguin': 'gauguin',
+        'Signac': 'signac',
+        'Paul Signac': 'signac',
+        // 야수파
+        'Matisse': 'matisse',
+        'Henri Matisse': 'matisse',
+        'Derain': 'derain',
+        'André Derain': 'derain',
+        'Vlaminck': 'vlaminck',
+        'Maurice de Vlaminck': 'vlaminck',
+        // 표현주의
+        'Munch': 'munch',
+        'Edvard Munch': 'munch',
+        'Kokoschka': 'kokoschka',
+        'Oskar Kokoschka': 'kokoschka',
+        'Kirchner': 'kirchner',
+        'Ernst Ludwig Kirchner': 'kirchner',
+        'Kandinsky': 'kandinsky',
+        'Wassily Kandinsky': 'kandinsky',
+        // 모더니즘
+        'Picasso': 'picasso',
+        'Pablo Picasso': 'picasso',
+        'Magritte': 'magritte',
+        'René Magritte': 'magritte',
+        'Miró': 'miro',
+        'Joan Miró': 'miro',
+        'Chagall': 'chagall',
+        'Marc Chagall': 'chagall',
+        'Warhol': 'warhol',
+        'Andy Warhol': 'warhol',
+        'Lichtenstein': 'lichtenstein',
+        'Roy Lichtenstein': 'lichtenstein',
+        'Keith Haring': 'keith-haring',
+      };
+      
+      const key = movementsArtistKeyMap[artistName];
+      if (key) {
+        console.log('✅ Movements artistKeyMap matched:', key);
+        return key;
+      }
+      
+      // 부분 매칭 시도 (성만으로)
+      const lastName = artistName.split(/[\s-]+/).pop()?.toLowerCase();
+      if (lastName && oneclickMovementsSecondary[lastName]) {
+        console.log('✅ Movements lastName matched:', lastName);
         return lastName;
       }
     }
     
-    // 4. 첫 단어
-    const firstName = words[0].toLowerCase();
-    if (oneclickSecondaryEducation[firstName]) {
-      console.log('✅ FirstName found:', firstName);
-      return firstName;
+    // ========== 동양화: artistName으로 매칭 ==========
+    if (category === 'oriental' && artistName) {
+      const orientalKeyMap = {
+        'Korean Minhwa': 'korean-minhwa',
+        '민화': 'korean-minhwa',
+        'Korean Pungsokdo': 'korean-genre',
+        '풍속화': 'korean-genre',
+        'Korean Jingyeong': 'korean-jingyeong',
+        '진경산수': 'korean-jingyeong',
+        'Chinese Ink Wash': 'chinese-ink',
+        '수묵산수': 'chinese-ink',
+        'Chinese Gongbi': 'chinese-gongbi',
+        '공필화': 'chinese-gongbi',
+        'Japanese Ukiyo-e': 'japanese-ukiyoe',
+        '우키요에': 'japanese-ukiyoe',
+      };
+      
+      const key = orientalKeyMap[artistName];
+      if (key) {
+        console.log('✅ Oriental keyMap matched:', key);
+        return key;
+      }
+      
+      // styleId 기반 fallback
+      const styleId = currentResult?.style?.id;
+      if (styleId === 'korean') return 'korean-minhwa';
+      if (styleId === 'chinese') return 'chinese-ink';
+      if (styleId === 'japanese') return 'japanese-ukiyoe';
     }
     
-    // 5. 특수 케이스 - "Van Gogh" → "gogh"
-    if (artistName.toLowerCase().includes('gogh')) {
-      if (oneclickSecondaryEducation['gogh']) return 'gogh';
-      if (oneclickSecondaryEducation['van-gogh']) return 'van-gogh';
-    }
-    
-    // 6. 한글 매핑
-    const koreanMapping = {
-      '반 고흐': 'gogh',
-      '고흐': 'gogh',
-      '클림트': 'klimt',
-      '뭉크': 'munch',
-      '마티스': 'matisse',
-      '피카소': 'picasso',
-      '프리다 칼로': 'frida',
-      '프리다': 'frida',
-      '앤디 워홀': 'warhol',
-      '워홀': 'warhol',
-    };
-    if (koreanMapping[artistName] && oneclickSecondaryEducation[koreanMapping[artistName]]) {
-      console.log('✅ Korean found:', koreanMapping[artistName]);
-      return koreanMapping[artistName];
-    }
-    
-    console.log('❌ No key found for:', artistName);
+    console.log('❌ No key found');
     return null;
   };
 
@@ -180,18 +335,37 @@ const ResultScreen = ({
     
     let content = null;
     
-    // ========== 원클릭: oneclickSecondaryEducation 사용 ==========
-    if (isFullTransform && displayArtist) {
-      console.log('📜 ONECLICK MODE - using oneclickSecondaryEducation');
-      const key = getOneclickEducationKey(displayArtist);
+    // ========== 원클릭: 분리된 원클릭 교육자료 파일 사용 ==========
+    if (isFullTransform) {
+      console.log('📜 ONECLICK MODE - using separated education files');
+      console.log('   - displayWork:', displayWork);
       console.log('   - displayArtist:', displayArtist);
-      console.log('   - key:', key);
-      if (key && oneclickSecondaryEducation[key]) {
-        content = oneclickSecondaryEducation[key].content;
-        console.log('✅ Found oneclick education for:', key);
-        console.log('   - content preview:', content?.substring(0, 50));
+      console.log('   - displayCategory:', displayCategory);
+      
+      const key = getOneclickEducationKey(displayWork, displayArtist, displayCategory);
+      console.log('   - matched key:', key);
+      
+      if (key) {
+        // 카테고리별 분리된 파일에서 교육자료 가져오기
+        let educationData = null;
+        
+        if (displayCategory === 'masters') {
+          educationData = oneclickMastersSecondary[key];
+        } else if (displayCategory === 'movements') {
+          educationData = oneclickMovementsSecondary[key];
+        } else if (displayCategory === 'oriental') {
+          educationData = oneclickOrientalSecondary[key];
+        }
+        
+        if (educationData) {
+          content = educationData.content;
+          console.log('✅ Found oneclick education for:', key);
+          console.log('   - content preview:', content?.substring(0, 50));
+        } else {
+          console.log('❌ No education data found for key:', key);
+        }
       } else {
-        console.log('❌ No oneclick education found for key:', key);
+        console.log('❌ No key matched');
       }
     }
     
