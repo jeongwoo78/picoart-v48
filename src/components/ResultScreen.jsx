@@ -199,7 +199,6 @@ const ResultScreen = ({
     else {
       console.log('📜 Loading masters education...');
       content = getMastersEducation(artistForEducation);
-      }
     }
     
     // 결과 설정
