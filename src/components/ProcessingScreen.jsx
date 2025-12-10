@@ -149,6 +149,37 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   const artistNameToKey = (artistName) => {
     if (!artistName) return null;
     
+    // 한글→영어 매핑
+    const koreanToEnglish = {
+      '반 고흐': 'vangogh',
+      '고흐': 'vangogh',
+      '클림트': 'klimt',
+      '뭉크': 'munch',
+      '마티스': 'matisse',
+      '피카소': 'picasso',
+      '프리다 칼로': 'frida',
+      '프리다': 'frida',
+      '앤디 워홀': 'warhol',
+      '워홀': 'warhol',
+      // 동양화
+      'Korean Pungsokdo': 'korean-genre',
+      'Korean Minhwa': 'korean-minhwa',
+      'Korean Jingyeong': 'korean-jingyeong',
+      'Chinese Gongbi': 'chinese-gongbi',
+      'Chinese Ink Wash': 'chinese-ink',
+      '일본 우키요에': 'japanese-ukiyoe',
+      'Japanese Ukiyo-e': 'japanese-ukiyoe',
+    };
+    
+    // 1. 직접 매핑 확인
+    if (koreanToEnglish[artistName]) {
+      const key = koreanToEnglish[artistName];
+      if (oneclickSecondaryEducation[key]) {
+        console.log('✅ Found via korean mapping:', key);
+        return key;
+      }
+    }
+    
     const clean = artistName.replace(/\s*\([^)]*\)/g, '').trim();
     const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const words = clean.split(/\s+/);

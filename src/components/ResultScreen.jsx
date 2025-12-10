@@ -95,10 +95,51 @@ const ResultScreen = ({
 
   // ========== Effects ==========
   // aiSelectedArtist가 변경될 때마다 2차 교육 재생성
+  // 원클릭: currentIndex 변경 시에도 재생성
   useEffect(() => {
     console.log('🎨 ResultScreen mounted or aiSelectedArtist changed');
     generate2ndEducation();
-  }, [aiSelectedArtist]);
+  }, [aiSelectedArtist, currentIndex]);
+
+
+  // ========== 원클릭용 한글→영어 매핑 ==========
+  const getOneclickEducationKey = (artistName) => {
+    if (!artistName) return null;
+    
+    const koreanToEnglish = {
+      '반 고흐': 'vangogh',
+      '고흐': 'vangogh',
+      '클림트': 'klimt',
+      '뭉크': 'munch',
+      '마티스': 'matisse',
+      '피카소': 'picasso',
+      '프리다 칼로': 'frida',
+      '프리다': 'frida',
+      '앤디 워홀': 'warhol',
+      '워홀': 'warhol',
+      'Korean Pungsokdo': 'korean-genre',
+      'Korean Minhwa': 'korean-minhwa',
+      'Korean Jingyeong': 'korean-jingyeong',
+      'Chinese Gongbi': 'chinese-gongbi',
+      'Chinese Ink Wash': 'chinese-ink',
+      '일본 우키요에': 'japanese-ukiyoe',
+      'Japanese Ukiyo-e': 'japanese-ukiyoe',
+    };
+    
+    // 1. 직접 매핑
+    if (koreanToEnglish[artistName] && oneclickSecondaryEducation[koreanToEnglish[artistName]]) {
+      return koreanToEnglish[artistName];
+    }
+    
+    // 2. 소문자 변환
+    const lower = artistName.toLowerCase().replace(/\s+/g, '');
+    if (oneclickSecondaryEducation[lower]) return lower;
+    
+    const lowerDash = artistName.toLowerCase().replace(/\s+/g, '-');
+    if (oneclickSecondaryEducation[lowerDash]) return lowerDash;
+    
+    return null;
+  };
 
 
   // ========== 2차 교육 로드 (v55 - 디버깅 강화) ==========
@@ -107,30 +148,45 @@ const ResultScreen = ({
     console.log('🔥🔥🔥 LOAD EDUCATION START (v55) 🔥🔥🔥');
     console.log('   - category:', selectedStyle.category);
     console.log('   - aiSelectedArtist:', aiSelectedArtist);
-    console.log('   - current educationText:', educationText);
-    console.log('   - current isLoadingEducation:', isLoadingEducation);
+    console.log('   - isFullTransform:', isFullTransform);
+    console.log('   - currentIndex:', currentIndex);
+    console.log('   - displayArtist:', displayArtist);
     console.log('');
     
     setIsLoadingEducation(true);
     
     let content = null;
     
-    // 1. 동양화 (oriental)
-    if (selectedStyle.category === 'oriental') {
-      console.log('📜 Loading oriental education...');
-      content = getOrientalEducation();
+    // 원클릭일 때: oneclickSecondaryEducation 사용
+    if (isFullTransform && currentResult) {
+      console.log('📜 Loading oneclick education...');
+      const key = getOneclickEducationKey(displayArtist);
+      console.log('   - displayArtist:', displayArtist, '→ key:', key);
+      if (key && oneclickSecondaryEducation[key]) {
+        content = oneclickSecondaryEducation[key].content;
+        console.log('✅ Found oneclick education for:', key);
+      }
     }
     
-    // 2. 미술사조 (movements)
-    else if (selectedStyle.category !== 'masters') {
-      console.log('📜 Loading movements education...');
-      content = getMovementsEducation();
-    }
-    
-    // 3. 거장 (masters)
-    else {
-      console.log('📜 Loading masters education...');
-      content = getMastersEducation();
+    // 단일 변환일 때: 기존 로직
+    if (!content) {
+      // 1. 동양화 (oriental)
+      if (selectedStyle.category === 'oriental') {
+        console.log('📜 Loading oriental education...');
+        content = getOrientalEducation();
+      }
+      
+      // 2. 미술사조 (movements)
+      else if (selectedStyle.category !== 'masters') {
+        console.log('📜 Loading movements education...');
+        content = getMovementsEducation();
+      }
+      
+      // 3. 거장 (masters)
+      else {
+        console.log('📜 Loading masters education...');
+        content = getMastersEducation();
+      }
     }
     
     // 결과 설정
