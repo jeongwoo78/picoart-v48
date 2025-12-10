@@ -2109,7 +2109,10 @@ async function selectArtistWithAI(imageBase64, selectedStyle, timeoutMs = 15000)
   
   // 변수 선언을 함수 최상단으로 이동 (스코프 문제 해결)
   const categoryName = selectedStyle.name;
-  const categoryType = selectedStyle.category;
+  // v74: 미술사조는 id를 사용 (rococo, impressionism 등), 거장/동양화는 category 사용
+  const categoryType = (selectedStyle.category === 'movements') 
+    ? selectedStyle.id 
+    : selectedStyle.category;
   
   try {
     let promptText;

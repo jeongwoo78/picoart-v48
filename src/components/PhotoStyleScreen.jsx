@@ -7,7 +7,7 @@ const PhotoStyleScreen = ({ mainCategory, onBack, onSelect }) => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
 
-  // 카테고리별 데이터
+  // 카테고리별 데이터 (스타일 목록의 유일한 소스)
   const categoryData = {
     movements: {
       name: '미술사조',
@@ -62,7 +62,7 @@ const PhotoStyleScreen = ({ mainCategory, onBack, onSelect }) => {
         id: 'oriental-all',
         name: '동양화 전체 변환',
         desc: '당신의 사진 한 장이 천 년의 동양 미학을 만납니다',
-        count: 6,
+        count: 3,
         isFullTransform: true,
         category: 'oriental'
       },
@@ -135,7 +135,11 @@ const PhotoStyleScreen = ({ mainCategory, onBack, onSelect }) => {
       alert('먼저 사진을 선택해주세요!');
       return;
     }
-    onSelect(photo, currentCategory.fullTransform);
+    // 스타일 배열을 함께 전달 (ProcessingScreen이 styleData 몰라도 됨)
+    onSelect(photo, {
+      ...currentCategory.fullTransform,
+      styles: currentCategory.styles.map(s => ({ ...s, category: mainCategory }))
+    });
   };
 
   return (

@@ -1,4 +1,5 @@
-// PicoArt v73 - ProcessingScreen (원클릭 = 단일변환 반복)
+// PicoArt v75 - ProcessingScreen (단일변환 반복 = 원클릭)
+// 원칙: 단일 변환 로직만 있고, 원클릭은 그걸 N번 반복
 import React, { useEffect, useState } from 'react';
 import { processStyleTransfer } from '../utils/styleTransferAPI';
 import { educationContent } from '../data/educationContent';
@@ -12,43 +13,14 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   const [completedResults, setCompletedResults] = useState([]);
   const [completedCount, setCompletedCount] = useState(0);
   const [viewIndex, setViewIndex] = useState(-1);
+  const [touchStartX, setTouchStartX] = useState(0);
   
   // 원클릭 여부
   const isFullTransform = selectedStyle?.isFullTransform === true;
   const category = selectedStyle?.category;
   
-  // 원클릭 스타일 목록
-  const fullTransformStyles = {
-    movements: [
-      { id: 'ancient', name: '그리스·로마', category: 'movements' },
-      { id: 'medieval', name: '중세 미술', category: 'movements' },
-      { id: 'renaissance', name: '르네상스', category: 'movements' },
-      { id: 'baroque', name: '바로크', category: 'movements' },
-      { id: 'rococo', name: '로코코', category: 'movements' },
-      { id: 'neoclassicism_vs_romanticism_vs_realism', name: '신고전·낭만·사실', category: 'movements' },
-      { id: 'impressionism', name: '인상주의', category: 'movements' },
-      { id: 'postImpressionism', name: '후기인상주의', category: 'movements' },
-      { id: 'fauvism', name: '야수파', category: 'movements' },
-      { id: 'expressionism', name: '표현주의', category: 'movements' },
-      { id: 'modernism', name: '모더니즘', category: 'movements' }
-    ],
-    masters: [
-      { id: 'vangogh-master', name: '반 고흐', category: 'masters' },
-      { id: 'klimt-master', name: '클림트', category: 'masters' },
-      { id: 'munch-master', name: '뭉크', category: 'masters' },
-      { id: 'matisse-master', name: '마티스', category: 'masters' },
-      { id: 'picasso-master', name: '피카소', category: 'masters' },
-      { id: 'frida-master', name: '프리다 칼로', category: 'masters' },
-      { id: 'warhol-master', name: '앤디 워홀', category: 'masters' }
-    ],
-    oriental: [
-      { id: 'korean', name: '한국 전통 회화', category: 'oriental' },
-      { id: 'chinese', name: '중국 전통 회화', category: 'oriental' },
-      { id: 'japanese', name: '일본 전통 회화', category: 'oriental' }
-    ]
-  };
-
-  const styles = isFullTransform ? (fullTransformStyles[category] || []) : [];
+  // 원클릭 시 전달받은 스타일 배열 사용 (styleData import 불필요!)
+  const styles = isFullTransform ? (selectedStyle?.styles || []) : [];
   const totalCount = styles.length;
 
   useEffect(() => {
@@ -58,15 +30,18 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   // ========== 메인 프로세스 ==========
   const startProcess = async () => {
     if (isFullTransform) {
-      // 원클릭: 1차 교육 표시 후 순차 변환
+      // 원클릭: 1차 교육 표시 후 순차 변환 (단일 변환 반복!)
       setShowEducation(true);
       setStatusText(`${totalCount}개 스타일 변환을 시작합니다...`);
       await sleep(1500);
       
       const results = [];
       for (let i = 0; i < styles.length; i++) {
-        setStatusText(`[${i + 1}/${totalCount}] ${styles[i].name} 변환 중...`);
-        const result = await processSingleStyle(styles[i], i, totalCount);
+        const style = styles[i]; // 공통 데이터에서 가져온 스타일 (category 포함)
+        setStatusText(`[${i + 1}/${totalCount}] ${style.name} 변환 중...`);
+        
+        // 단일 변환과 동일하게 호출!
+        const result = await processSingleStyle(style, i, totalCount);
         results.push(result);
         setCompletedCount(i + 1);
         setCompletedResults([...results]);
@@ -98,12 +73,12 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     }
   };
 
-  // ========== 단일 스타일 변환 (핵심 함수) ==========
+  // ========== 단일 스타일 변환 (핵심 함수 - 원클릭도 이거 사용) ==========
   const processSingleStyle = async (style, index = 0, total = 1) => {
     try {
       const result = await processStyleTransfer(
         photo,
-        style,
+        style, // category 포함된 스타일 객체 그대로 전달
         null,
         (progressText) => {
           if (total > 1) {
@@ -131,26 +106,19 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
 
   // ========== 교육자료 ==========
   
-  // 1차 교육 (단일 변환용)
+  // 단일 변환용 1차 교육
   const getEducationContent = (style) => {
     const cat = style.category;
-    
-    if (cat !== 'masters' && cat !== 'oriental') {
-      return educationContent.movements[cat];
-    }
-    if (cat === 'masters') {
-      return educationContent.masters[style.id] || { title: style.name, desc: '' };
-    }
-    if (cat === 'oriental') {
-      return educationContent.oriental[style.id] || { title: style.name, desc: '' };
-    }
+    if (cat === 'movements') return educationContent.movements[style.id];
+    if (cat === 'masters') return educationContent.masters[style.id];
+    if (cat === 'oriental') return educationContent.oriental[style.id];
     return null;
   };
 
-  // 1차 교육 (원클릭용)
+  // 원클릭 1차 교육
   const getPrimaryEducation = () => oneclickPrimaryEducation[category];
 
-  // 2차 교육 (결과별) - 화가명 → 키 변환
+  // 원클릭 2차 교육 (결과별)
   const getSecondaryEducation = (result) => {
     if (!result) return null;
     
@@ -203,17 +171,19 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   
   const handleBackToEducation = () => setViewIndex(-1);
 
-  const handleSwipe = (e, type) => {
+  const handleTouchStart = (e) => {
     if (!isFullTransform) return;
-    if (type === 'start') {
-      e.currentTarget.touchStartX = e.touches[0].clientX;
-    } else {
-      const diff = e.currentTarget.touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0 && viewIndex < completedCount - 1) setViewIndex(v => v + 1);
-        if (diff < 0 && viewIndex > -1) setViewIndex(v => v - 1);
-      }
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isFullTransform || !touchStartX) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && viewIndex < completedCount - 1) setViewIndex(v => v + 1);
+      if (diff < 0 && viewIndex > -1) setViewIndex(v => v - 1);
     }
+    setTouchStartX(0);
   };
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -226,8 +196,8 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     <div className="processing-screen">
       <div 
         className="processing-content"
-        onTouchStart={(e) => handleSwipe(e, 'start')}
-        onTouchEnd={(e) => handleSwipe(e, 'end')}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         {/* 헤더 */}
         <div className="header">
