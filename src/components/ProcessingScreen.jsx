@@ -1,0 +1,403 @@
+// PicoArt v73 - ProcessingScreen (원클릭 = 단일변환 반복)
+import React, { useEffect, useState } from 'react';
+import { processStyleTransfer } from '../utils/styleTransferAPI';
+import { educationContent } from '../data/educationContent';
+import { oneclickPrimaryEducation, oneclickSecondaryEducation } from '../data/oneclickEducation';
+
+const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
+  const [statusText, setStatusText] = useState('준비 중...');
+  const [showEducation, setShowEducation] = useState(false);
+  
+  // 원클릭 상태
+  const [completedResults, setCompletedResults] = useState([]);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [viewIndex, setViewIndex] = useState(-1);
+  
+  // 원클릭 여부
+  const isFullTransform = selectedStyle?.isFullTransform === true;
+  const category = selectedStyle?.category;
+  
+  // 원클릭 스타일 목록
+  const fullTransformStyles = {
+    movements: [
+      { id: 'ancient', name: '그리스·로마', category: 'movements' },
+      { id: 'medieval', name: '중세 미술', category: 'movements' },
+      { id: 'renaissance', name: '르네상스', category: 'movements' },
+      { id: 'baroque', name: '바로크', category: 'movements' },
+      { id: 'rococo', name: '로코코', category: 'movements' },
+      { id: 'neoclassicism_vs_romanticism_vs_realism', name: '신고전·낭만·사실', category: 'movements' },
+      { id: 'impressionism', name: '인상주의', category: 'movements' },
+      { id: 'postImpressionism', name: '후기인상주의', category: 'movements' },
+      { id: 'fauvism', name: '야수파', category: 'movements' },
+      { id: 'expressionism', name: '표현주의', category: 'movements' },
+      { id: 'modernism', name: '모더니즘', category: 'movements' }
+    ],
+    masters: [
+      { id: 'vangogh-master', name: '반 고흐', category: 'masters' },
+      { id: 'klimt-master', name: '클림트', category: 'masters' },
+      { id: 'munch-master', name: '뭉크', category: 'masters' },
+      { id: 'matisse-master', name: '마티스', category: 'masters' },
+      { id: 'picasso-master', name: '피카소', category: 'masters' },
+      { id: 'frida-master', name: '프리다 칼로', category: 'masters' },
+      { id: 'warhol-master', name: '앤디 워홀', category: 'masters' }
+    ],
+    oriental: [
+      { id: 'korean', name: '한국 전통 회화', category: 'oriental' },
+      { id: 'chinese', name: '중국 전통 회화', category: 'oriental' },
+      { id: 'japanese', name: '일본 전통 회화', category: 'oriental' }
+    ]
+  };
+
+  const styles = isFullTransform ? (fullTransformStyles[category] || []) : [];
+  const totalCount = styles.length;
+
+  useEffect(() => {
+    startProcess();
+  }, []);
+
+  // ========== 메인 프로세스 ==========
+  const startProcess = async () => {
+    if (isFullTransform) {
+      // 원클릭: 1차 교육 표시 후 순차 변환
+      setShowEducation(true);
+      setStatusText(`${totalCount}개 스타일 변환을 시작합니다...`);
+      await sleep(1500);
+      
+      const results = [];
+      for (let i = 0; i < styles.length; i++) {
+        setStatusText(`[${i + 1}/${totalCount}] ${styles[i].name} 변환 중...`);
+        const result = await processSingleStyle(styles[i], i, totalCount);
+        results.push(result);
+        setCompletedCount(i + 1);
+        setCompletedResults([...results]);
+      }
+      
+      const successCount = results.filter(r => r.success).length;
+      setStatusText(`완료! ${successCount}/${totalCount}개 변환 성공`);
+      await sleep(1000);
+      
+      onComplete(selectedStyle, results, { isFullTransform: true, category, results });
+    } else {
+      // 단일 변환
+      setShowEducation(true);
+      const eduContent = getEducationContent(selectedStyle);
+      if (eduContent) {
+        setStatusText(`${eduContent.title} 스타일 분석 중...`);
+      }
+      await sleep(1000);
+      
+      const result = await processSingleStyle(selectedStyle);
+      
+      if (result.success) {
+        setStatusText(`${result.aiSelectedArtist || selectedStyle.name} 화풍으로 변환 완료!`);
+        await sleep(1000);
+        onComplete(selectedStyle, result.resultUrl, result);
+      } else {
+        setStatusText(`오류: ${result.error}`);
+      }
+    }
+  };
+
+  // ========== 단일 스타일 변환 (핵심 함수) ==========
+  const processSingleStyle = async (style, index = 0, total = 1) => {
+    try {
+      const result = await processStyleTransfer(
+        photo,
+        style,
+        null,
+        (progressText) => {
+          if (total > 1) {
+            setStatusText(`[${index + 1}/${total}] ${progressText}`);
+          } else {
+            setStatusText(progressText);
+          }
+        }
+      );
+
+      if (result.success) {
+        return {
+          style,
+          resultUrl: result.resultUrl,
+          aiSelectedArtist: result.aiSelectedArtist,
+          success: true
+        };
+      } else {
+        return { style, error: result.error, success: false };
+      }
+    } catch (err) {
+      return { style, error: err.message, success: false };
+    }
+  };
+
+  // ========== 교육자료 ==========
+  
+  // 1차 교육 (단일 변환용)
+  const getEducationContent = (style) => {
+    const cat = style.category;
+    
+    if (cat !== 'masters' && cat !== 'oriental') {
+      return educationContent.movements[cat];
+    }
+    if (cat === 'masters') {
+      return educationContent.masters[style.id] || { title: style.name, desc: '' };
+    }
+    if (cat === 'oriental') {
+      return educationContent.oriental[style.id] || { title: style.name, desc: '' };
+    }
+    return null;
+  };
+
+  // 1차 교육 (원클릭용)
+  const getPrimaryEducation = () => oneclickPrimaryEducation[category];
+
+  // 2차 교육 (결과별) - 화가명 → 키 변환
+  const getSecondaryEducation = (result) => {
+    if (!result) return null;
+    
+    const artistName = result.aiSelectedArtist || '';
+    const styleId = result.style?.id;
+    
+    // 1. 화가명으로 찾기
+    const key = artistNameToKey(artistName);
+    if (key && oneclickSecondaryEducation[key]) {
+      const edu = oneclickSecondaryEducation[key];
+      return { name: edu.name || artistName, content: edu.content };
+    }
+    
+    // 2. styleId로 찾기
+    if (styleId && oneclickSecondaryEducation[styleId]) {
+      const edu = oneclickSecondaryEducation[styleId];
+      return { name: edu.name || result.style.name, content: edu.content };
+    }
+    
+    return null;
+  };
+
+  // 화가명 → 교육자료 키 변환
+  const artistNameToKey = (artistName) => {
+    if (!artistName) return null;
+    
+    const clean = artistName.replace(/\s*\([^)]*\)/g, '').trim();
+    const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const words = clean.split(/\s+/);
+    
+    const patterns = [
+      clean.toLowerCase().replace(/\s+/g, '-'),
+      clean.toLowerCase().replace(/\s+/g, ''),
+      words.length > 1 ? words[words.length - 1].toLowerCase() : null,
+      words[0].toLowerCase(),
+      normalize(clean.toLowerCase().replace(/\s+/g, '-')),
+      normalize(clean.toLowerCase().replace(/\s+/g, '')),
+    ].filter(Boolean);
+    
+    for (const p of patterns) {
+      if (oneclickSecondaryEducation[p]) return p;
+    }
+    return null;
+  };
+
+  // ========== UI 핸들러 ==========
+  const handleDotClick = (idx) => {
+    if (idx < completedCount) setViewIndex(idx);
+  };
+  
+  const handleBackToEducation = () => setViewIndex(-1);
+
+  const handleSwipe = (e, type) => {
+    if (!isFullTransform) return;
+    if (type === 'start') {
+      e.currentTarget.touchStartX = e.touches[0].clientX;
+    } else {
+      const diff = e.currentTarget.touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0 && viewIndex < completedCount - 1) setViewIndex(v => v + 1);
+        if (diff < 0 && viewIndex > -1) setViewIndex(v => v - 1);
+      }
+    }
+  };
+
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // 현재 보여줄 결과
+  const previewResult = viewIndex >= 0 ? completedResults[viewIndex] : null;
+  const previewEdu = previewResult ? getSecondaryEducation(previewResult) : null;
+
+  return (
+    <div className="processing-screen">
+      <div 
+        className="processing-content"
+        onTouchStart={(e) => handleSwipe(e, 'start')}
+        onTouchEnd={(e) => handleSwipe(e, 'end')}
+      >
+        {/* 헤더 */}
+        <div className="header">
+          <h2>{isFullTransform ? '✨ 전체 변환' : '🎨 변환 중'}</h2>
+          {isFullTransform && viewIndex >= 0 && (
+            <button className="back-btn" onClick={handleBackToEducation}>← 교육자료</button>
+          )}
+        </div>
+
+        {/* 상태 */}
+        <div className="status">
+          <div className="spinner"></div>
+          <p>{statusText}</p>
+        </div>
+
+        {/* ===== 원클릭 모드 ===== */}
+        {isFullTransform && (
+          <>
+            {/* 1차 교육 */}
+            {viewIndex === -1 && showEducation && getPrimaryEducation() && (
+              <div className="edu-card primary">
+                <p>{getPrimaryEducation().content}</p>
+                {completedCount > 0 && <p className="hint">👆 완료된 결과를 확인하세요</p>}
+              </div>
+            )}
+
+            {/* 결과 미리보기 */}
+            {viewIndex >= 0 && previewResult && (
+              <div className="preview">
+                <div className="preview-header">{previewResult.style.name}</div>
+                <img src={previewResult.resultUrl} alt="" />
+                {previewResult.aiSelectedArtist && (
+                  <div className="ai-info">🤖 {previewResult.aiSelectedArtist}</div>
+                )}
+                {previewEdu && (
+                  <div className="edu-card secondary">
+                    <h4>{previewEdu.name}</h4>
+                    <p>{previewEdu.content}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 점 네비게이션 */}
+            <div className="dots">
+              <button className={`dot edu ${viewIndex === -1 ? 'active' : ''}`} onClick={handleBackToEducation}>📚</button>
+              {styles.map((_, idx) => (
+                <button 
+                  key={idx}
+                  className={`dot ${idx < completedCount ? 'done' : ''} ${viewIndex === idx ? 'active' : ''}`}
+                  onClick={() => handleDotClick(idx)}
+                  disabled={idx >= completedCount}
+                />
+              ))}
+              <span className="count">{completedCount}/{totalCount}</span>
+            </div>
+          </>
+        )}
+
+        {/* ===== 단일 변환 모드 ===== */}
+        {!isFullTransform && showEducation && getEducationContent(selectedStyle) && (
+          <div className="edu-card primary">
+            <h3>{getEducationContent(selectedStyle).title}</h3>
+            <p>{getEducationContent(selectedStyle).desc}</p>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        .processing-screen {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          padding: 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .processing-content {
+          background: white;
+          padding: 24px;
+          border-radius: 16px;
+          max-width: 500px;
+          width: 100%;
+          max-height: 85vh;
+          overflow-y: auto;
+        }
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .header h2 { margin: 0; font-size: 18px; color: #333; }
+        .back-btn {
+          padding: 6px 12px;
+          background: #f0f0f0;
+          border: none;
+          border-radius: 6px;
+          font-size: 13px;
+          cursor: pointer;
+        }
+        .status {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin: 16px 0;
+        }
+        .status p { margin: 0; color: #666; font-size: 14px; }
+        .spinner {
+          width: 20px; height: 20px;
+          border: 2px solid #f3f3f3;
+          border-top: 2px solid #667eea;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .edu-card {
+          padding: 16px;
+          border-radius: 10px;
+          margin: 16px 0;
+        }
+        .edu-card.primary {
+          background: linear-gradient(135deg, #fff5f5, #ffe5e5);
+          border-left: 3px solid #667eea;
+        }
+        .edu-card.secondary {
+          background: linear-gradient(135deg, #f0fff0, #e5ffe5);
+          border-left: 3px solid #4CAF50;
+        }
+        .edu-card h3 { color: #667eea; margin: 0 0 10px; font-size: 15px; }
+        .edu-card h4 { color: #4CAF50; margin: 0 0 8px; font-size: 14px; }
+        .edu-card p { color: #333; line-height: 1.6; font-size: 13px; margin: 0; white-space: pre-line; }
+        .hint { color: #999; font-size: 12px; text-align: center; margin-top: 12px !important; }
+        
+        .preview { background: #f8f9fa; border-radius: 10px; overflow: hidden; margin: 16px 0; }
+        .preview-header { background: #667eea; color: white; padding: 10px; font-size: 14px; font-weight: 600; }
+        .preview img { width: 100%; display: block; }
+        .ai-info { padding: 8px 12px; background: #e9ecef; font-size: 12px; color: #666; }
+        
+        .dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 16px;
+          flex-wrap: wrap;
+        }
+        .dot {
+          width: 10px; height: 10px;
+          border-radius: 50%;
+          border: none;
+          background: #ddd;
+          cursor: pointer;
+          padding: 0;
+        }
+        .dot.done { background: #4CAF50; }
+        .dot.active { transform: scale(1.4); box-shadow: 0 0 0 2px rgba(102,126,234,0.4); }
+        .dot:disabled { opacity: 0.4; cursor: default; }
+        .dot.edu {
+          width: auto; padding: 4px 8px;
+          border-radius: 10px;
+          font-size: 12px;
+          background: #667eea;
+        }
+        .count { font-size: 12px; color: #999; margin-left: 8px; }
+      `}</style>
+    </div>
+  );
+};
+
+export default ProcessingScreen;
