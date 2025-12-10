@@ -102,14 +102,51 @@ const ResultScreen = ({
   }, [aiSelectedArtist, currentIndex]);
 
 
-  // ========== 원클릭용 한글→영어 매핑 ==========
+  // ========== 원클릭용 키 매칭 (단순화) ==========
   const getOneclickEducationKey = (artistName) => {
     if (!artistName) return null;
     
-    const nameMapping = {
-      // 거장 - 한글
-      '반 고흐': 'vangogh',
-      '고흐': 'vangogh',
+    // 1. 소문자 변환 (공백 제거)
+    const lower = artistName.toLowerCase().replace(/\s+/g, '');
+    if (oneclickSecondaryEducation[lower]) {
+      console.log('✅ Lower found:', lower);
+      return lower;
+    }
+    
+    // 2. 소문자 변환 (공백 → 대시)
+    const lowerDash = artistName.toLowerCase().replace(/\s+/g, '-');
+    if (oneclickSecondaryEducation[lowerDash]) {
+      console.log('✅ LowerDash found:', lowerDash);
+      return lowerDash;
+    }
+    
+    // 3. 마지막 단어 (성) 추출 - "Pierre-Auguste Renoir" → "renoir"
+    const words = artistName.split(/[\s-]+/);
+    if (words.length > 1) {
+      const lastName = words[words.length - 1].toLowerCase();
+      if (oneclickSecondaryEducation[lastName]) {
+        console.log('✅ LastName found:', lastName);
+        return lastName;
+      }
+    }
+    
+    // 4. 첫 단어
+    const firstName = words[0].toLowerCase();
+    if (oneclickSecondaryEducation[firstName]) {
+      console.log('✅ FirstName found:', firstName);
+      return firstName;
+    }
+    
+    // 5. 특수 케이스 - "Van Gogh" → "gogh"
+    if (artistName.toLowerCase().includes('gogh')) {
+      if (oneclickSecondaryEducation['gogh']) return 'gogh';
+      if (oneclickSecondaryEducation['van-gogh']) return 'van-gogh';
+    }
+    
+    // 6. 한글 매핑
+    const koreanMapping = {
+      '반 고흐': 'gogh',
+      '고흐': 'gogh',
       '클림트': 'klimt',
       '뭉크': 'munch',
       '마티스': 'matisse',
@@ -118,75 +155,23 @@ const ResultScreen = ({
       '프리다': 'frida',
       '앤디 워홀': 'warhol',
       '워홀': 'warhol',
-      
-      // 동양화
-      'Korean Pungsokdo': 'korean-genre',
-      'Korean Minhwa': 'korean-minhwa',
-      'Korean Jingyeong': 'korean-jingyeong',
-      'Chinese Gongbi': 'chinese-gongbi',
-      'Chinese Ink Wash': 'chinese-ink',
-      '일본 우키요에': 'japanese-ukiyoe',
-      'Japanese Ukiyo-e': 'japanese-ukiyoe',
-      
-      // 미술사조 - 영어
-      'Classical Sculpture': 'ancient-greek-sculpture',
-      'CLASSICAL SCULPTURE': 'ancient-greek-sculpture',
-      'Byzantine': 'byzantine',
-      'BYZANTINE': 'byzantine',
-      'LEONARDO DA VINCI': 'leonardo',
-      'Leonardo da Vinci': 'leonardo',
-      'CARAVAGGIO': 'caravaggio',
-      'Caravaggio': 'caravaggio',
-      'François Boucher': 'boucher',
-      'FRANCOIS BOUCHER': 'boucher',
-      'Francisco Goya': 'goya',
-      'FRANCISCO GOYA': 'goya',
-      'RENOIR': 'renoir',
-      'Renoir': 'renoir',
-      'CEZANNE': 'cezanne',
-      'Cézanne': 'cezanne',
-      'Paul Cézanne': 'cezanne',
-      'MATISSE': 'matisse',
-      'Matisse': 'matisse',
-      'MUNCH': 'munch',
-      'Munch': 'munch',
-      'WARHOL': 'warhol',
-      'Warhol': 'warhol',
-      'VAN GOGH': 'vangogh',
-      'Van Gogh': 'vangogh',
-      'KLIMT': 'klimt',
-      'Klimt': 'klimt',
-      'PICASSO': 'picasso',
-      'Picasso': 'picasso',
-      'FRIDA': 'frida',
-      'Frida': 'frida',
-      'Frida Kahlo': 'frida',
     };
-    
-    // 1. 직접 매핑
-    if (nameMapping[artistName] && oneclickSecondaryEducation[nameMapping[artistName]]) {
-      return nameMapping[artistName];
+    if (koreanMapping[artistName] && oneclickSecondaryEducation[koreanMapping[artistName]]) {
+      console.log('✅ Korean found:', koreanMapping[artistName]);
+      return koreanMapping[artistName];
     }
     
-    // 2. 소문자 변환
-    const lower = artistName.toLowerCase().replace(/\s+/g, '');
-    if (oneclickSecondaryEducation[lower]) return lower;
-    
-    const lowerDash = artistName.toLowerCase().replace(/\s+/g, '-');
-    if (oneclickSecondaryEducation[lowerDash]) return lowerDash;
-    
+    console.log('❌ No key found for:', artistName);
     return null;
   };
 
 
-  // ========== 2차 교육 로드 (v55 - 디버깅 강화) ==========
+  // ========== 2차 교육 로드 ==========
   const generate2ndEducation = () => {
     console.log('');
-    console.log('🔥🔥🔥 LOAD EDUCATION START (v55) 🔥🔥🔥');
+    console.log('🔥🔥🔥 LOAD EDUCATION START 🔥🔥🔥');
     console.log('   - category:', selectedStyle.category);
-    console.log('   - aiSelectedArtist:', aiSelectedArtist);
     console.log('   - isFullTransform:', isFullTransform);
-    console.log('   - currentIndex:', currentIndex);
     console.log('   - displayArtist:', displayArtist);
     console.log('');
     
@@ -194,35 +179,26 @@ const ResultScreen = ({
     
     let content = null;
     
-    // 원클릭일 때: oneclickSecondaryEducation 사용
-    if (isFullTransform && currentResult) {
-      console.log('📜 Loading oneclick education...');
-      const key = getOneclickEducationKey(displayArtist);
-      console.log('   - displayArtist:', displayArtist, '→ key:', key);
-      if (key && oneclickSecondaryEducation[key]) {
-        content = oneclickSecondaryEducation[key].content;
-        console.log('✅ Found oneclick education for:', key);
-      }
+    // 카테고리별 교육자료 로드 (원클릭/단일 동일 로직)
+    const category = isFullTransform ? selectedStyle.category : selectedStyle.category;
+    const artistForEducation = isFullTransform ? displayArtist : aiSelectedArtist;
+    
+    // 1. 동양화 (oriental)
+    if (category === 'oriental') {
+      console.log('📜 Loading oriental education...');
+      content = getOrientalEducation(artistForEducation);
     }
     
-    // 단일 변환일 때: 기존 로직
-    if (!content) {
-      // 1. 동양화 (oriental)
-      if (selectedStyle.category === 'oriental') {
-        console.log('📜 Loading oriental education...');
-        content = getOrientalEducation();
-      }
-      
-      // 2. 미술사조 (movements)
-      else if (selectedStyle.category !== 'masters') {
-        console.log('📜 Loading movements education...');
-        content = getMovementsEducation();
-      }
-      
-      // 3. 거장 (masters)
-      else {
-        console.log('📜 Loading masters education...');
-        content = getMastersEducation();
+    // 2. 미술사조 (movements)
+    else if (category === 'movements' || category !== 'masters') {
+      console.log('📜 Loading movements education...');
+      content = getMovementsEducation(artistForEducation);
+    }
+    
+    // 3. 거장 (masters)
+    else {
+      console.log('📜 Loading masters education...');
+      content = getMastersEducation(artistForEducation);
       }
     }
     
@@ -250,21 +226,21 @@ const ResultScreen = ({
 
 
   // ========== 미술사조 교육 콘텐츠 (v49 - 동양화 방식) ==========
-  const getMovementsEducation = () => {
+  const getMovementsEducation = (overrideArtist = null) => {
     const category = selectedStyle.category;
+    const artistSource = overrideArtist || aiSelectedArtist;
     
     console.log('');
     console.log('========================================');
     console.log('🎨 MOVEMENTS EDUCATION (v52):');
     console.log('========================================');
     console.log('   - category:', category);
-    console.log('   - aiSelectedArtist (raw):', aiSelectedArtist);
-    console.log('   - aiSelectedArtist type:', typeof aiSelectedArtist);
+    console.log('   - artistSource:', artistSource);
     console.log('========================================');
     console.log('');
     
     // 화가 이름 정규화
-    let artistName = (aiSelectedArtist || '')
+    let artistName = (artistSource || '')
       .replace(/\s*\([^)]*\)/g, '')  // 괄호 제거
       .trim();
     
@@ -348,17 +324,15 @@ const ResultScreen = ({
 
 
   // ========== 거장 교육 콘텐츠 (v60 - 통합본 사용) ==========
-  const getMastersEducation = () => {
-    const artistRaw = aiSelectedArtist || selectedStyle.name || '';
-    const artist = artistRaw.replace(/\s*\([^)]*\)/g, '').trim();
+  const getMastersEducation = (overrideArtist = null) => {
+    const artistSource = overrideArtist || aiSelectedArtist || selectedStyle.name || '';
+    const artist = artistSource.replace(/\s*\([^)]*\)/g, '').trim();
     
     console.log('');
     console.log('========================================');
     console.log('🎨 MASTERS EDUCATION (v60 통합본):');
     console.log('========================================');
-    console.log('   - selectedStyle.name:', selectedStyle.name);
-    console.log('   - aiSelectedArtist:', aiSelectedArtist);
-    console.log('   - aiSelectedWork:', aiSelectedWork);
+    console.log('   - artistSource:', artistSource);
     console.log('   - normalized artist:', artist);
     console.log('========================================');
     console.log('');
@@ -797,23 +771,23 @@ const ResultScreen = ({
 
 
   // ========== 동양화 교육 콘텐츠 (v30) ==========
-  const getOrientalEducation = () => {
+  const getOrientalEducation = (overrideArtist = null) => {
     const styleId = selectedStyle.id;
+    const artistSource = overrideArtist || aiSelectedArtist;
     
     console.log('');
     console.log('========================================');
     console.log('🔍 ORIENTAL EDUCATION DEBUG (v30)');
     console.log('========================================');
     console.log('📌 selectedStyle.id:', styleId);
-    console.log('📌 aiSelectedArtist:', aiSelectedArtist);
-    console.log('📌 aiSelectedArtist type:', typeof aiSelectedArtist);
+    console.log('📌 artistSource:', artistSource);
     console.log('========================================');
     console.log('');
     
     
     // ========== 한국 전통 회화 (3가지) ==========
     if (styleId === 'korean') {
-      const genre = aiSelectedArtist?.toLowerCase() || '';
+      const genre = artistSource?.toLowerCase() || '';
       console.log('🇰🇷 KOREAN ART DETECTION:');
       console.log('   - genre string:', genre);
       console.log('');

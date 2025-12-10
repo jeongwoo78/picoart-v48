@@ -145,15 +145,51 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     return null;
   };
 
-  // 화가명 → 교육자료 키 변환
+  // 화가명 → 교육자료 키 변환 (단순화)
   const artistNameToKey = (artistName) => {
     if (!artistName) return null;
     
-    // 이름 매핑 (한글 + 영어)
-    const nameMapping = {
-      // 거장 - 한글
-      '반 고흐': 'vangogh',
-      '고흐': 'vangogh',
+    // 1. 소문자 변환 (공백 제거)
+    const lower = artistName.toLowerCase().replace(/\s+/g, '');
+    if (oneclickSecondaryEducation[lower]) {
+      console.log('✅ Lower found:', lower);
+      return lower;
+    }
+    
+    // 2. 소문자 변환 (공백 → 대시)
+    const lowerDash = artistName.toLowerCase().replace(/\s+/g, '-');
+    if (oneclickSecondaryEducation[lowerDash]) {
+      console.log('✅ LowerDash found:', lowerDash);
+      return lowerDash;
+    }
+    
+    // 3. 마지막 단어 (성) 추출 - "Pierre-Auguste Renoir" → "renoir"
+    const words = artistName.split(/[\s-]+/);
+    if (words.length > 1) {
+      const lastName = words[words.length - 1].toLowerCase();
+      if (oneclickSecondaryEducation[lastName]) {
+        console.log('✅ LastName found:', lastName);
+        return lastName;
+      }
+    }
+    
+    // 4. 첫 단어
+    const firstName = words[0].toLowerCase();
+    if (oneclickSecondaryEducation[firstName]) {
+      console.log('✅ FirstName found:', firstName);
+      return firstName;
+    }
+    
+    // 5. 특수 케이스 - "Van Gogh" → "gogh"
+    if (artistName.toLowerCase().includes('gogh')) {
+      if (oneclickSecondaryEducation['gogh']) return 'gogh';
+      if (oneclickSecondaryEducation['van-gogh']) return 'van-gogh';
+    }
+    
+    // 6. 한글 매핑
+    const koreanMapping = {
+      '반 고흐': 'gogh',
+      '고흐': 'gogh',
       '클림트': 'klimt',
       '뭉크': 'munch',
       '마티스': 'matisse',
@@ -162,81 +198,12 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       '프리다': 'frida',
       '앤디 워홀': 'warhol',
       '워홀': 'warhol',
-      
-      // 동양화
-      'Korean Pungsokdo': 'korean-genre',
-      'Korean Minhwa': 'korean-minhwa',
-      'Korean Jingyeong': 'korean-jingyeong',
-      'Chinese Gongbi': 'chinese-gongbi',
-      'Chinese Ink Wash': 'chinese-ink',
-      '일본 우키요에': 'japanese-ukiyoe',
-      'Japanese Ukiyo-e': 'japanese-ukiyoe',
-      
-      // 미술사조 - 영어
-      'Classical Sculpture': 'ancient-greek-sculpture',
-      'CLASSICAL SCULPTURE': 'ancient-greek-sculpture',
-      'Byzantine': 'byzantine',
-      'BYZANTINE': 'byzantine',
-      'LEONARDO DA VINCI': 'leonardo',
-      'Leonardo da Vinci': 'leonardo',
-      'CARAVAGGIO': 'caravaggio',
-      'Caravaggio': 'caravaggio',
-      'François Boucher': 'boucher',
-      'FRANCOIS BOUCHER': 'boucher',
-      'Francisco Goya': 'goya',
-      'FRANCISCO GOYA': 'goya',
-      'RENOIR': 'renoir',
-      'Renoir': 'renoir',
-      'CEZANNE': 'cezanne',
-      'Cézanne': 'cezanne',
-      'Paul Cézanne': 'cezanne',
-      'MATISSE': 'matisse',
-      'Matisse': 'matisse',
-      'MUNCH': 'munch',
-      'Munch': 'munch',
-      'WARHOL': 'warhol',
-      'Warhol': 'warhol',
-      'VAN GOGH': 'vangogh',
-      'Van Gogh': 'vangogh',
-      'KLIMT': 'klimt',
-      'Klimt': 'klimt',
-      'PICASSO': 'picasso',
-      'Picasso': 'picasso',
-      'FRIDA': 'frida',
-      'Frida': 'frida',
-      'Frida Kahlo': 'frida',
     };
-    
-    // 1. 직접 매핑 확인
-    if (nameMapping[artistName]) {
-      const key = nameMapping[artistName];
-      if (oneclickSecondaryEducation[key]) {
-        console.log('✅ Found via mapping:', key);
-        return key;
-      }
+    if (koreanMapping[artistName] && oneclickSecondaryEducation[koreanMapping[artistName]]) {
+      console.log('✅ Korean found:', koreanMapping[artistName]);
+      return koreanMapping[artistName];
     }
     
-    const clean = artistName.replace(/\s*\([^)]*\)/g, '').trim();
-    const normalize = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const words = clean.split(/\s+/);
-    
-    const patterns = [
-      clean.toLowerCase().replace(/\s+/g, '-'),
-      clean.toLowerCase().replace(/\s+/g, ''),
-      words.length > 1 ? words[words.length - 1].toLowerCase() : null,
-      words[0].toLowerCase(),
-      normalize(clean.toLowerCase().replace(/\s+/g, '-')),
-      normalize(clean.toLowerCase().replace(/\s+/g, '')),
-    ].filter(Boolean);
-    
-    console.log('🔍 artistNameToKey:', artistName, '→ patterns:', patterns);
-    
-    for (const p of patterns) {
-      if (oneclickSecondaryEducation[p]) {
-        console.log('✅ Found key:', p);
-        return p;
-      }
-    }
     console.log('❌ No key found for:', artistName);
     return null;
   };
