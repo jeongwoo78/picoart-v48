@@ -45,6 +45,16 @@ const App = () => {
       setAiSelectedArtist(null);
       setAiSelectedWork(null);
       console.log('✅ App.jsx received fullTransform results:', result.results.length);
+      // 디버그: 각 결과의 aiSelectedArtist 확인
+      result.results.forEach((r, i) => {
+        console.log(`📦 Result[${i}]:`, {
+          style: r.style?.name,
+          success: r.success,
+          aiSelectedArtist: r.aiSelectedArtist,
+          selected_work: r.selected_work,
+          error: r.error
+        });
+      });
     } else {
       // 단일 변환인 경우
       setFullTransformResults(null);

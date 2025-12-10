@@ -180,6 +180,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     // 거장: 작품명 기반 매칭
     if (resultCategory === 'masters' && workName) {
       const mastersWorkKeyMap = {
+        // 영문
         'The Starry Night': 'gogh-starrynight',
         'Starry Night': 'gogh-starrynight',
         'Sunflowers': 'gogh-sunflowers',
@@ -203,6 +204,27 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         'Marilyn Monroe': 'warhol-marilyn',
         'Marilyn': 'warhol-marilyn',
         'Campbell\'s Soup Cans': 'warhol-soup',
+        // 한글
+        '별이 빛나는 밤': 'gogh-starrynight',
+        '해바라기': 'gogh-sunflowers',
+        '자화상': 'gogh-selfportrait',
+        '키스': 'klimt-kiss',
+        '생명의 나무': 'klimt-treeoflife',
+        '유디트': 'klimt-judith',
+        '절규': 'munch-scream',
+        '마돈나': 'munch-madonna',
+        '춤': 'matisse-dance',
+        '붉은 방': 'matisse-redroom',
+        '모자를 쓴 여인': 'matisse-womanwithhat',
+        '게르니카': 'picasso-guernica',
+        '우는 여인': 'picasso-weepingwoman',
+        '아비뇽의 처녀들': 'picasso-demoiselles',
+        '나와 앵무새': 'frida-parrots',
+        '부러진 기둥': 'frida-brokencolumn',
+        '가시 목걸이와 벌새가 있는 자화상': 'frida-thornnecklace',
+        '원숭이와 함께 있는 자화상': 'frida-monkeys',
+        '마릴린 먼로': 'warhol-marilyn',
+        '캠벨 수프 캔': 'warhol-soup',
       };
       if (mastersWorkKeyMap[workName]) {
         return mastersWorkKeyMap[workName];
