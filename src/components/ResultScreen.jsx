@@ -208,6 +208,7 @@ const ResultScreen = ({
         // 르네상스
         'Leonardo da Vinci': 'leonardo',
         'LEONARDO': 'leonardo',
+        'LEONARDO DA VINCI': 'leonardo',
         'Michelangelo': 'michelangelo',
         'MICHELANGELO': 'michelangelo',
         'Raphael': 'raphael',
