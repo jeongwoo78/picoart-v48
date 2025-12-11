@@ -182,6 +182,62 @@ const ResultScreen = ({
     }
   };
 
+  // ========== 단일 스타일 재시도 함수 ==========
+  const handleRetrySingle = async (index) => {
+    if (!originalPhoto || isRetrying) return;
+    
+    const failed = results[index];
+    if (!failed || failed.success) return;
+    
+    setIsRetrying(true);
+    setRetryProgress(`${failed.style?.name} 재시도 중...`);
+    console.log(`🔄 단일 재시도: ${failed.style?.name}`);
+    
+    try {
+      const result = await processStyleTransfer(
+        originalPhoto,
+        failed.style,
+        null,
+        (progress) => setRetryProgress(`${failed.style?.name}: ${progress}`)
+      );
+      
+      if (result.success) {
+        // 성공하면 해당 인덱스 결과 업데이트
+        setResults(prev => {
+          const newResults = [...prev];
+          newResults[index] = {
+            style: failed.style,
+            resultUrl: result.resultUrl,
+            aiSelectedArtist: result.aiSelectedArtist,
+            selected_work: result.selected_work,
+            success: true
+          };
+          return newResults;
+        });
+        console.log(`✅ 재시도 성공: ${failed.style?.name}`);
+        
+        // 갤러리에 저장
+        const styleName = result.aiSelectedArtist || failed.style?.name || '변환 이미지';
+        const categoryName = failed.style?.category === 'movements' ? '미술사조' 
+          : failed.style?.category === 'masters' ? '거장' 
+          : failed.style?.category === 'oriental' ? '동양화' 
+          : '';
+        await saveToGallery(result.resultUrl, styleName, categoryName);
+        
+        alert('재시도 성공!');
+      } else {
+        console.log(`❌ 재시도 실패: ${failed.style?.name} - ${result.error}`);
+        alert('재시도 실패. 나중에 다시 시도해주세요.');
+      }
+    } catch (error) {
+      console.error(`❌ 재시도 에러: ${failed.style?.name}`, error);
+      alert('재시도 중 오류가 발생했습니다.');
+    }
+    
+    setIsRetrying(false);
+    setRetryProgress('');
+  };
+
 
   // ========== Effects ==========
   // aiSelectedArtist가 변경될 때마다 2차 교육 재생성
@@ -1435,22 +1491,30 @@ const ResultScreen = ({
           </div>
         )}
 
-        {/* 재시도 버튼 (실패한 결과가 있을 때만 표시) */}
-        {isFullTransform && failedCount > 0 && (
+        {/* 재시도 버튼 (현재 보고 있는 결과가 실패한 경우에만 표시) */}
+        {isFullTransform && currentResult && !currentResult.success && (
           <div className="retry-section">
             {isRetrying ? (
-              <div className="retry-progress">
-                <div className="spinner-small"></div>
-                <span>{retryProgress}</span>
+              <div className="retry-in-progress">
+                <div className="retry-status">
+                  <div className="spinner-medium"></div>
+                  <p className="retry-text">{retryProgress}</p>
+                </div>
+                <div className="retry-education">
+                  <p>🎨 잠시만 기다려주세요. AI가 다시 변환 중입니다...</p>
+                </div>
               </div>
             ) : (
-              <button 
-                className="btn btn-retry"
-                onClick={handleRetry}
-              >
-                <span className="btn-icon">🔄</span>
-                실패한 {failedCount}개 재시도 (무료)
-              </button>
+              <div className="retry-prompt">
+                <p className="fail-message">❌ 이 변환은 실패했습니다</p>
+                <button 
+                  className="btn btn-retry"
+                  onClick={() => handleRetrySingle(currentIndex)}
+                >
+                  <span className="btn-icon">🔄</span>
+                  이 스타일 재시도 (무료)
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -1769,6 +1833,19 @@ const ResultScreen = ({
           text-align: center;
         }
 
+        .retry-prompt {
+          background: rgba(239, 68, 68, 0.1);
+          border: 2px solid rgba(239, 68, 68, 0.3);
+          border-radius: 16px;
+          padding: 1.5rem;
+        }
+
+        .fail-message {
+          color: #fca5a5;
+          font-size: 1rem;
+          margin-bottom: 1rem;
+        }
+
         .btn-retry {
           background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
           color: white;
@@ -1789,16 +1866,45 @@ const ResultScreen = ({
           box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
         }
 
-        .retry-progress {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.75rem;
-          color: white;
-          font-size: 0.95rem;
-          padding: 1rem;
+        .retry-in-progress {
           background: rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          padding: 2rem;
+        }
+
+        .retry-status {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
+        .retry-text {
+          color: white;
+          font-size: 1.1rem;
+          font-weight: 500;
+        }
+
+        .retry-education {
+          background: rgba(255, 255, 255, 0.05);
           border-radius: 12px;
+          padding: 1rem;
+        }
+
+        .retry-education p {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 0.95rem;
+          margin: 0;
+        }
+
+        .spinner-medium {
+          width: 40px;
+          height: 40px;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
         }
 
         .spinner-small {
