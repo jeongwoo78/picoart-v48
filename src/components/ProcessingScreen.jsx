@@ -78,6 +78,14 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
 
   // ========== 단일 스타일 변환 (핵심 함수 - 원클릭도 이거 사용) ==========
   const processSingleStyle = async (style, index = 0, total = 1) => {
+    
+    // ⚠️ 테스트용: 3번째, 5번째 강제 실패 (테스트 후 삭제!)
+    const TEST_FORCE_FAIL = true; // false로 바꾸면 정상 작동
+    if (TEST_FORCE_FAIL && total > 1 && (index === 2 || index === 4)) {
+      console.log(`🧪 테스트: ${index + 1}번째 강제 실패`);
+      return { style, error: '테스트 강제 실패', success: false };
+    }
+    
     try {
       const result = await processStyleTransfer(
         photo,

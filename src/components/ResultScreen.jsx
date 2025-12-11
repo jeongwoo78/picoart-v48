@@ -1,7 +1,7 @@
-// PicoArt v77 - ResultScreen
+// PicoArt v78 - ResultScreen
 // 원클릭 교육자료 매칭: 단일변환과 동일한 workKeyMap 로직 사용
 // 교육자료 파일만 분리된 원클릭 전용 파일 사용
-// 2025-12-11 업데이트
+// 2025-12-11 업데이트: 재시도 기능 추가
 
 import React, { useState, useEffect, useRef } from 'react';
 import BeforeAfter from './BeforeAfter';
@@ -13,6 +13,7 @@ import { oneclickMovementsSecondary } from '../data/oneclickMovementsEducation';
 import { oneclickMastersSecondary } from '../data/oneclickMastersEducation';
 import { oneclickOrientalSecondary } from '../data/oneclickOrientalEducation';
 import { saveToGallery } from './GalleryScreen';
+import { processStyleTransfer } from '../utils/styleTransferAPI';
 
 
 const ResultScreen = ({ 
@@ -30,8 +31,23 @@ const ResultScreen = ({
   const isFullTransform = fullTransformResults && fullTransformResults.length > 0;
   const [currentIndex, setCurrentIndex] = useState(0);
   
+  // ========== 재시도 관련 ==========
+  const [results, setResults] = useState(fullTransformResults || []);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryProgress, setRetryProgress] = useState('');
+  
+  // fullTransformResults가 변경되면 results도 업데이트
+  useEffect(() => {
+    if (fullTransformResults) {
+      setResults(fullTransformResults);
+    }
+  }, [fullTransformResults]);
+  
+  // 실패한 결과 개수
+  const failedCount = results.filter(r => !r.success).length;
+  
   // 현재 보여줄 결과
-  const currentResult = isFullTransform ? fullTransformResults[currentIndex] : null;
+  const currentResult = isFullTransform ? results[currentIndex] : null;
   const displayImage = isFullTransform ? currentResult?.resultUrl : resultImage;
   const displayArtist = isFullTransform ? currentResult?.aiSelectedArtist : aiSelectedArtist;
   const displayWork = isFullTransform ? currentResult?.selected_work : aiSelectedWork;
@@ -97,6 +113,74 @@ const ResultScreen = ({
     
     saveToGalleryAsync();
   }, [resultImage, selectedStyle, aiSelectedArtist, fullTransformResults, isFullTransform]);
+
+
+  // ========== 재시도 함수 ==========
+  const handleRetry = async () => {
+    if (!originalPhoto || isRetrying) return;
+    
+    const failedResults = results.filter(r => !r.success);
+    if (failedResults.length === 0) return;
+    
+    setIsRetrying(true);
+    console.log(`🔄 재시도 시작: ${failedResults.length}개 실패한 변환`);
+    
+    let successCount = 0;
+    
+    for (let i = 0; i < failedResults.length; i++) {
+      const failed = failedResults[i];
+      const failedIndex = results.findIndex(r => r.style?.id === failed.style?.id);
+      
+      setRetryProgress(`재시도 중... (${i + 1}/${failedResults.length}) ${failed.style?.name || ''}`);
+      
+      try {
+        const result = await processStyleTransfer(
+          originalPhoto,
+          failed.style,
+          null,
+          (progress) => setRetryProgress(`${failed.style?.name}: ${progress}`)
+        );
+        
+        if (result.success) {
+          // 성공하면 해당 인덱스 결과 업데이트
+          setResults(prev => {
+            const newResults = [...prev];
+            newResults[failedIndex] = {
+              style: failed.style,
+              resultUrl: result.resultUrl,
+              aiSelectedArtist: result.aiSelectedArtist,
+              selected_work: result.selected_work,
+              success: true
+            };
+            return newResults;
+          });
+          successCount++;
+          console.log(`✅ 재시도 성공: ${failed.style?.name}`);
+          
+          // 갤러리에 저장
+          const styleName = result.aiSelectedArtist || failed.style?.name || '변환 이미지';
+          const categoryName = failed.style?.category === 'movements' ? '미술사조' 
+            : failed.style?.category === 'masters' ? '거장' 
+            : failed.style?.category === 'oriental' ? '동양화' 
+            : '';
+          await saveToGallery(result.resultUrl, styleName, categoryName);
+        } else {
+          console.log(`❌ 재시도 실패: ${failed.style?.name} - ${result.error}`);
+        }
+      } catch (error) {
+        console.error(`❌ 재시도 에러: ${failed.style?.name}`, error);
+      }
+    }
+    
+    setIsRetrying(false);
+    setRetryProgress('');
+    
+    if (successCount > 0) {
+      alert(`재시도 완료! ${successCount}개 성공`);
+    } else {
+      alert('재시도했지만 모두 실패했습니다. 나중에 다시 시도해주세요.');
+    }
+  };
 
 
   // ========== Effects ==========
@@ -1351,6 +1435,26 @@ const ResultScreen = ({
           </div>
         )}
 
+        {/* 재시도 버튼 (실패한 결과가 있을 때만 표시) */}
+        {isFullTransform && failedCount > 0 && (
+          <div className="retry-section">
+            {isRetrying ? (
+              <div className="retry-progress">
+                <div className="spinner-small"></div>
+                <span>{retryProgress}</span>
+              </div>
+            ) : (
+              <button 
+                className="btn btn-retry"
+                onClick={handleRetry}
+              >
+                <span className="btn-icon">🔄</span>
+                실패한 {failedCount}개 재시도 (무료)
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="action-buttons">
           <button 
@@ -1657,6 +1761,57 @@ const ResultScreen = ({
           color: white;
           transform: translateY(-2px);
           box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        /* 재시도 섹션 */
+        .retry-section {
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+
+        .btn-retry {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          color: white;
+          border: none;
+          padding: 1rem 2rem;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.3s ease;
+        }
+
+        .btn-retry:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .retry-progress {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          color: white;
+          font-size: 0.95rem;
+          padding: 1rem;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+        }
+
+        .spinner-small {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
