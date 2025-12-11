@@ -2137,8 +2137,7 @@ GUSTAV KLIMT - SELECT ONE:
         'munch': `
 EDVARD MUNCH - SELECT ONE:
 1. "The Scream" (절규) → single figure, emotional, anxious | Style: WAVY DISTORTED lines, BLOOD RED sky, agonized figure, existential terror
-2. "Madonna" (마돈나) → woman portrait, sensual, mysterious | Style: FLOWING DARK HAIR like halo, closed eyes, red lips
-3. "The Sick Child" (병든 아이) → intimate portrait, emotional, tender | Style: PALE sickly colors, scratched texture, melancholic`,
+2. "Madonna" (마돈나) → woman portrait, sensual, mysterious | Style: FLOWING DARK HAIR like halo, closed eyes, red lips`,
 
         'matisse': `
 HENRI MATISSE - SELECT ONE:
@@ -4034,7 +4033,6 @@ export default async function handler(req, res) {
     // ========================================
     const excludeAttractive = [
       'munch-scream',      // 절규 - 공포/불안 왜곡
-      'munch-sickchild',   // 병든 아이 - 창백함/고통
       'picasso-guernica',  // 게르니카 - 전쟁 참상
       'picasso-weepingwoman', // 우는 여인 - 슬픔 왜곡
       'frida-brokencolumn' // 부러진 기둥 - 고통 시각화

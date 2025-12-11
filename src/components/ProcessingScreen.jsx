@@ -143,6 +143,53 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     if (!artistName) return '';
     
     const nameMap = {
+      // 그리스로마
+      'roman mosaic': '로마 모자이크(Roman Mosaic)',
+      'greek sculpture': '그리스 조각(Greek Sculpture)',
+      'pompeii fresco': '폼페이 프레스코(Pompeii Fresco)',
+      // 중세
+      'giotto': '지오토(Giotto di Bondone)',
+      'byzantine': '비잔틴(Byzantine)',
+      'gothic': '고딕(Gothic)',
+      // 르네상스
+      'leonardo': '레오나르도 다 빈치(Leonardo da Vinci)',
+      'michelangelo': '미켈란젤로(Michelangelo)',
+      'raphael': '라파엘로(Raffaello Sanzio)',
+      'botticelli': '보티첼리(Sandro Botticelli)',
+      'jan van eyck': '얀 반 에이크(Jan van Eyck)',
+      // 바로크
+      'caravaggio': '카라바조(Caravaggio)',
+      'rembrandt': '렘브란트(Rembrandt van Rijn)',
+      'vermeer': '베르메르(Johannes Vermeer)',
+      'rubens': '루벤스(Peter Paul Rubens)',
+      'velázquez': '벨라스케스(Diego Velázquez)',
+      'velazquez': '벨라스케스(Diego Velázquez)',
+      // 로코코
+      'watteau': '와토(Antoine Watteau)',
+      'fragonard': '프라고나르(Jean-Honoré Fragonard)',
+      'boucher': '부셰(François Boucher)',
+      // 신고전/낭만/사실
+      'david': '다비드(Jacques-Louis David)',
+      'ingres': '앵그르(Jean-Auguste-Dominique Ingres)',
+      'delacroix': '들라크루아(Eugène Delacroix)',
+      'goya': '고야(Francisco Goya)',
+      'francisco goya': '고야(Francisco Goya)',
+      'courbet': '쿠르베(Gustave Courbet)',
+      'millet': '밀레(Jean-François Millet)',
+      // 인상주의
+      'monet': '모네(Claude Monet)',
+      'renoir': '르누아르(Pierre-Auguste Renoir)',
+      'degas': '드가(Edgar Degas)',
+      'manet': '마네(Édouard Manet)',
+      'pissarro': '피사로(Camille Pissarro)',
+      'sisley': '시슬레(Alfred Sisley)',
+      // 후기인상주의
+      'van gogh': '반 고흐(Vincent van Gogh)',
+      'cézanne': '세잔(Paul Cézanne)',
+      'cezanne': '세잔(Paul Cézanne)',
+      'gauguin': '고갱(Paul Gauguin)',
+      'seurat': '쇠라(Georges Seurat)',
+      'toulouse-lautrec': '툴루즈 로트렉(Henri de Toulouse-Lautrec)',
       // 야수파
       'matisse': '마티스(Henri Matisse)',
       'henri matisse': '마티스(Henri Matisse)',
@@ -154,32 +201,17 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       'kandinsky': '칸딘스키(Wassily Kandinsky)',
       'kokoschka': '코코슈카(Oskar Kokoschka)',
       'schiele': '에곤 실레(Egon Schiele)',
-      // 인상주의
-      'monet': '모네(Claude Monet)',
-      'renoir': '르누아르(Pierre-Auguste Renoir)',
-      'degas': '드가(Edgar Degas)',
-      // 후기인상주의
-      'van gogh': '반 고흐(Vincent van Gogh)',
-      'cézanne': '세잔(Paul Cézanne)',
-      'cezanne': '세잔(Paul Cézanne)',
-      'gauguin': '고갱(Paul Gauguin)',
-      'seurat': '쇠라(Georges Seurat)',
-      // 입체주의/초현실/팝아트
+      // 모더니즘 (입체주의/초현실/팝아트)
       'picasso': '피카소(Pablo Picasso)',
+      'braque': '브라크(Georges Braque)',
       'magritte': '마그리트(René Magritte)',
+      'dali': '달리(Salvador Dalí)',
       'miro': '미로(Joan Miró)',
       'chagall': '샤갈(Marc Chagall)',
       'warhol': '워홀(Andy Warhol)',
       'lichtenstein': '리히텐슈타인(Roy Lichtenstein)',
       'haring': '키스 해링(Keith Haring)',
-      // 르네상스/바로크
-      'leonardo': '레오나르도 다 빈치(Leonardo da Vinci)',
-      'michelangelo': '미켈란젤로(Michelangelo)',
-      'raphael': '라파엘로(Raffaello Sanzio)',
-      'caravaggio': '카라바조(Caravaggio)',
-      'rembrandt': '렘브란트(Rembrandt van Rijn)',
-      'vermeer': '베르메르(Johannes Vermeer)',
-      // 거장
+      // 거장 (한글명)
       '반 고흐': '반 고흐(Vincent van Gogh)',
       '클림트': '클림트(Gustav Klimt)',
       '뭉크': '뭉크(Edvard Munch)',
@@ -767,11 +799,11 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         .edu-card p { color: #333; line-height: 1.6; font-size: 13px; margin: 0; white-space: pre-line; }
         .hint { color: #999; font-size: 12px; text-align: center; margin-top: 12px !important; }
         
-        .preview { background: #f8f9fa; border-radius: 10px; overflow: hidden; margin: 16px 0; }
+        .preview { background: #e3f2fd; border-radius: 10px; overflow: hidden; margin: 16px 0; }
         .preview img { width: 100%; display: block; }
-        .preview-info { padding: 12px; text-align: center; }
+        .preview-info { padding: 12px; text-align: left; }
         .preview-style { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 4px; }
-        .preview-subtitle { font-size: 13px; color: #666; }
+        .preview-subtitle { font-size: 13px; font-weight: 400; color: #666; }
         
         .dots-nav {
           display: flex;
