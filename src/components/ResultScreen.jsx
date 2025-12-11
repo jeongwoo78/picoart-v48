@@ -1094,6 +1094,7 @@ const ResultScreen = ({
       'ancient-greek-sculpture': '고대 조각(Ancient Sculpture)',
       'ancient-sculpture': '고대 조각(Ancient Sculpture)',
       'classical-sculpture': '고대 조각(Ancient Sculpture)',
+      'classical sculpture': '고대 조각(Classical Sculpture)',
       'greek-sculpture': '고대 조각(Ancient Sculpture)',
       'roman-mosaic': '로마 모자이크(Roman Mosaic)',
       'ancient-mosaic': '로마 모자이크(Roman Mosaic)',
@@ -1119,7 +1120,8 @@ const ResultScreen = ({
       'rembrandt': '렘브란트(Rembrandt van Rijn)',
       'vermeer': '베르메르(Johannes Vermeer)',
       'velazquez': '벨라스케스(Diego Velázquez)',
-      // v59: 루벤스 삭제 (API에 프롬프트 없음)
+      'rubens': '루벤스(Peter Paul Rubens)',
+      'peter paul rubens': '루벤스(Peter Paul Rubens)',
       
       // 로코코
       'watteau': '와토(Jean-Antoine Watteau)',
@@ -1141,6 +1143,8 @@ const ResultScreen = ({
       'delacroix': '들라크루아(Eugène Delacroix)',
       'eugène delacroix': '들라크루아(Eugène Delacroix)',
       'eugene delacroix': '들라크루아(Eugène Delacroix)',
+      'goya': '고야(Francisco Goya)',
+      'francisco goya': '고야(Francisco Goya)',
       
       // 사실주의
       'millet': '밀레(Jean-François Millet)',

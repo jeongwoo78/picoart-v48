@@ -229,9 +229,10 @@ const ARTIST_WEIGHTS = {
   baroque: {
     portrait: [
       { name: 'CARAVAGGIO', weight: 40 },
-      { name: 'REMBRANDT', weight: 35 },
+      { name: 'REMBRANDT', weight: 30 },
       { name: 'VERMEER', weight: 15 },
-      { name: 'VELÁZQUEZ', weight: 10 }
+      { name: 'VELÁZQUEZ', weight: 10 },
+      { name: 'RUBENS', weight: 5 }
     ],
     elderly: [
       { name: 'REMBRANDT', weight: 70 },
@@ -248,11 +249,22 @@ const ARTIST_WEIGHTS = {
       { name: 'REMBRANDT', weight: 25 },
       { name: 'CARAVAGGIO', weight: 15 }
     ],
-    default: [
-      { name: 'CARAVAGGIO', weight: 35 },
+    couple: [
+      { name: 'RUBENS', weight: 60 },
+      { name: 'REMBRANDT', weight: 25 },
+      { name: 'CARAVAGGIO', weight: 15 }
+    ],
+    group: [
+      { name: 'RUBENS', weight: 50 },
       { name: 'REMBRANDT', weight: 30 },
-      { name: 'VERMEER', weight: 20 },
-      { name: 'VELÁZQUEZ', weight: 15 }
+      { name: 'CARAVAGGIO', weight: 20 }
+    ],
+    default: [
+      { name: 'CARAVAGGIO', weight: 30 },
+      { name: 'REMBRANDT', weight: 25 },
+      { name: 'RUBENS', weight: 20 },
+      { name: 'VERMEER', weight: 15 },
+      { name: 'VELÁZQUEZ', weight: 10 }
     ]
   },
   
@@ -841,31 +853,30 @@ function getBaroqueGuidelines() {
   return `
 Available Baroque Artists (5명):
 
-1. CARAVAGGIO (카라바조) ⭐⭐⭐ STRONGEST for single portraits
+1. CARAVAGGIO (카라바조) ⭐⭐⭐ STRONGEST - default choice for single portraits
    - Specialty: Dramatic chiaroscuro, tenebrism, theatrical spotlight effect
    - Best for: Single person portraits, dramatic mood, strong expressions
-   - Signature: Dark background with spotlight, intense dramatic lighting
-   - Masterpiece: The Calling of Saint Matthew
-   - When to prioritize: Most 1-person portraits (STRONG RECOMMENDATION 70-80%)
+   - When to prioritize: Most single portraits (70%)
 
-2. REMBRANDT (렘브란트) - Best for elderly subjects
-   - Specialty: Warm golden light, psychological depth, intimate atmosphere
-   - Best for: Elderly subjects (60+), contemplative mood, wise expressions
-   - Signature: Rembrandt glow, soft warm transitions, soul-revealing depth
-   - Masterpiece: Self-portraits
-   - When to prioritize: Clear elderly subject (70%+)
+2. RUBENS (루벤스) ⭐⭐ Best for couples & groups
+   - Specialty: Warm sensual flesh, dynamic movement, voluptuous forms
+   - Best for: Couples, romantic scenes, multi-person compositions, warm energy
+   - When to prioritize: 2+ people, romantic/intimate mood, dynamic poses
 
-4. VELÁZQUEZ (벨라스케스) - Best for formal/official portraits
-   - Specialty: Courtly dignity, Spanish formality, spatial mastery
-   - Best for: Formal clothing, aristocratic mood, official portraits
-   - Signature: Las Meninas-like sophisticated composition
-   - When to prioritize: Clear formal/official context, elegant dress
+3. REMBRANDT (렘브란트) - Best for elderly subjects
+   - Specialty: Warm golden light, psychological depth
+   - Best for: Elderly subjects (60+), contemplative mood
+   - When to prioritize: Clear elderly subject
 
-5. VERMEER (베르메르) - Best for window light, peaceful women
-   - Specialty: Soft window light, domestic tranquility, pearl-like luminosity
-   - Best for: Female subject with natural side lighting, peaceful indoor scenes
-   - Signature: Pearl Earring-like gentle light and peace
-   - When to prioritize: Clear window/natural side light + female subject
+4. VELÁZQUEZ (벨라스케스) - Best for formal portraits
+   - Specialty: Courtly dignity, Spanish formality
+   - Best for: Formal clothing, aristocratic mood
+   - When to prioritize: Formal/official context
+
+5. VERMEER (베르메르) - Best for peaceful women with window light
+   - Specialty: Soft window light, domestic tranquility
+   - Best for: Female subject with natural side lighting
+   - When to prioritize: Window light + female subject
 `;
 }
 
@@ -914,10 +925,21 @@ Unless:
 `;
   }
   
-  // 2명 이상 → 카라바조
+  // 2명 커플 → 루벤스
+  if (count === 2) {
+    return `
+🎯 STRONG RECOMMENDATION: RUBENS (60%+)
+Couple detected - PERFECT for Rubens' warm sensual style!
+His dynamic compositions and glowing flesh tones capture romantic intimacy.
+Alternative: REMBRANDT for more contemplative couple mood.
+`;
+  }
+  
+  // 3명 이상 그룹 → 루벤스 또는 렘브란트
   return `
-🎯 STRONG RECOMMENDATION: CARAVAGGIO for dramatic group scene
-Caravaggio's chiaroscuro creates powerful intimate drama for any group size.
+🎯 STRONG RECOMMENDATION: RUBENS (50%) or REMBRANDT (30%)
+Group scene - Rubens excels at dynamic multi-figure compositions.
+For more dramatic spotlight effect, consider CARAVAGGIO.
 `;
 }
 
@@ -1790,6 +1812,8 @@ function getBaroqueArtistPrompt(artistName, subjectType = 'person') {
   const prompts = {
     'CARAVAGGIO': genderRule + 'painting by Caravaggio: DRAMATIC TENEBRISM with extreme light-dark contrast, single theatrical spotlight illuminating figures from darkness, deep BLACK SHADOWS engulfing most of scene, intense emotional realism, rich saturated colors emerging from darkness, dramatic diagonal composition, VISIBLE BRUSHWORK with oil paint texture, raw powerful naturalism, Caravaggio masterpiece quality' + paintTexture,
     
+    'RUBENS': genderRule + 'painting by Peter Paul Rubens: WARM SENSUAL FLESH TONES with luminous glowing skin, dynamic swirling composition full of movement and energy, rich warm palette of reds golds and creams, voluptuous graceful forms, romantic intimate atmosphere, The Garden of Love style warmth and passion, VISIBLE ENERGETIC BRUSHWORK with fluid paint texture, Rubens Baroque masterpiece quality' + paintTexture,
+    
     'REMBRANDT': genderRule + 'painting by Rembrandt: GOLDEN LUMINOUS LIGHT with warm glowing illumination, subtle light gradations revealing form from shadow, rich impasto brushwork visible in highlights, deep psychological introspection, intimate emotional depth, warm brown and gold palette, The Night Watch style dramatic lighting, THICK VISIBLE BRUSHSTROKES especially in light areas, Rembrandt masterpiece quality' + paintTexture,
     
     'VERMEER': genderRule + 'painting by Johannes Vermeer: SOFT DIFFUSED DAYLIGHT from window illuminating interior scene, quiet contemplative domestic moment, luminous pearl-like quality to skin and fabrics, intimate poetry of light, cool blue and warm yellow color harmony, exquisite rendering of light on surfaces, VISIBLE oil paint texture with soft brushwork, Vermeer masterpiece quality' + paintTexture,
@@ -1799,6 +1823,7 @@ function getBaroqueArtistPrompt(artistName, subjectType = 'person') {
   
   const normalized = artistName.toUpperCase().trim();
   if (normalized.includes('CARAVAGGIO') || normalized.includes('카라바조')) return prompts['CARAVAGGIO'];
+  if (normalized.includes('RUBENS') || normalized.includes('루벤스')) return prompts['RUBENS'];
   if (normalized.includes('REMBRANDT') || normalized.includes('렘브란트')) return prompts['REMBRANDT'];
   if (normalized.includes('VERMEER') || normalized.includes('베르메르')) return prompts['VERMEER'];
   if (normalized.includes('VELÁZQUEZ') || normalized.includes('VELAZQUEZ') || normalized.includes('벨라스케스')) return prompts['VELÁZQUEZ'];
@@ -3290,15 +3315,15 @@ export default async function handler(req, res) {
         // 르네상스 ~ 바로크 강화 프롬프트
         // ========================================
         
-        // 레오나르도 다 빈치 선택시 스푸마토 초강화 + control_strength 0.65
+        // 레오나르도 다 빈치 선택시 스푸마토 초강화 + control_strength 0.55
         if (selectedArtist.toUpperCase().trim().includes('LEONARDO') || selectedArtist.toUpperCase().trim().includes('DA VINCI')) {
           console.log('🎯 Leonardo da Vinci detected');
           if (!finalPrompt.includes('Mona Lisa-style')) {
-            finalPrompt = finalPrompt + ', painting by Leonardo da Vinci: CRITICAL SFUMATO - ALL EDGES must be EXTREMELY SOFT AND BLURRED like smoke or fog, ZERO SHARP LINES anywhere in entire image, every boundary DISSOLVED into hazy atmospheric mist, faces and figures emerging from smoky darkness, Mona Lisa and Virgin of the Rocks style MYSTERIOUS HAZE, colors blending seamlessly with NO hard transitions, warm golden-brown Renaissance palette, SOFT FOCUS throughout like looking through gauze, oil painting texture with subtle glazing layers, NOT sharp NOT clear NOT digital, PRESERVE original subject identity age and ethnicity exactly, child must remain child, DO NOT add elements not in original photo, sfumato masterpiece quality';
+            finalPrompt = finalPrompt + ', painting by Leonardo da Vinci: EXTREME SFUMATO with ALL EDGES SOFT AND BLURRED like smoke, faces emerging from smoky darkness, Mona Lisa mysterious haze, warm golden-brown palette, PRESERVE original subject identity exactly';
             controlStrength = 0.55;
-            console.log('✅ Enhanced Leonardo EXTREME sfumato (control_strength 0.55)');
+            console.log('✅ Enhanced Leonardo sfumato (control_strength 0.55)');
           } else {
-            console.log('ℹ️ Leonardo sfumato already in prompt (AI included it)');
+            console.log('ℹ️ Leonardo sfumato already in prompt');
           }
         }
         
@@ -3309,7 +3334,19 @@ export default async function handler(req, res) {
             finalPrompt = finalPrompt + ', DRAMATIC chiaroscuro with extreme light-dark contrast, theatrical spotlight effect, deep black shadows, tenebrism technique';
             console.log('✅ Enhanced Caravaggio chiaroscuro added');
           } else {
-            console.log('ℹ️ Caravaggio chiaroscuro already in prompt (AI included it)');
+            console.log('ℹ️ Caravaggio chiaroscuro already in prompt');
+          }
+        }
+        
+        // 루벤스 선택시 관능적 따뜻함 강화
+        if (selectedArtist.toUpperCase().trim().includes('RUBENS') || 
+            selectedArtist.includes('루벤스')) {
+          console.log('🎯 Rubens detected');
+          if (!finalPrompt.includes('sensual flesh')) {
+            finalPrompt = finalPrompt + ', painting by Rubens: warm sensual flesh tones, dynamic swirling composition, rich warm palette, romantic intimate atmosphere';
+            console.log('✅ Enhanced Rubens warmth added');
+          } else {
+            console.log('ℹ️ Rubens warmth already in prompt');
           }
         }
         
@@ -3317,21 +3354,21 @@ export default async function handler(req, res) {
         if (selectedArtist.toUpperCase().trim().includes('REMBRANDT')) {
           console.log('🎯 Rembrandt detected');
           if (!finalPrompt.includes('golden luminous light')) {
-            finalPrompt = finalPrompt + ', MASTERFUL use of golden luminous light, warm glowing illumination, subtle light gradations, Rembrandt lighting technique with soft transitions between light and shadow';
+            finalPrompt = finalPrompt + ', MASTERFUL use of golden luminous light, warm glowing illumination, subtle light gradations, Rembrandt lighting';
             console.log('✅ Enhanced Rembrandt lighting added');
           } else {
-            console.log('ℹ️ Rembrandt lighting already in prompt (AI included it)');
+            console.log('ℹ️ Rembrandt lighting already in prompt');
           }
         }
         
-        // 티치아노 선택시 베네치아 색채와 티치아노 레드 강화
+        // 티치아노 선택시 베네치아 색채 강화
         if (selectedArtist.toUpperCase().trim().includes('TITIAN')) {
           console.log('🎯 Titian detected');
           if (!finalPrompt.includes('Titian red')) {
-            finalPrompt = finalPrompt + ', painting by Titian, Venetian painting-style with rich luminous colors and signature Titian red tones, thick layered glazing technique creating depth and luminosity, warm golden-amber atmosphere, sensuous fluid brushwork, sumptuous color harmonies with radiant warm palette, glowing flesh tones and rich drapery';
+            finalPrompt = finalPrompt + ', painting by Titian: Venetian style with rich luminous colors, signature Titian red, warm golden atmosphere, glowing flesh tones';
             console.log('✅ Enhanced Titian colors added');
           } else {
-            console.log('ℹ️ Titian colors already in prompt (AI included it)');
+            console.log('ℹ️ Titian colors already in prompt');
           }
         }
         
@@ -3339,10 +3376,10 @@ export default async function handler(req, res) {
         if (selectedArtist.toUpperCase().trim().includes('BOTTICELLI')) {
           console.log('🎯 Botticelli detected');
           if (!finalPrompt.includes('Birth of Venus')) {
-            finalPrompt = finalPrompt + ', painting by Sandro Botticelli, Birth of Venus-style flowing graceful lines with wind-blown hair streaming elegantly, delicate drapery flowing in gentle curves, soft pastel colors of pale pinks seafoam greens and golden highlights, lyrical elegant movement and ethereal beauty, tender linear grace with elongated elegant figures';
-            console.log('✅ Enhanced Botticelli flowing grace added');
+            finalPrompt = finalPrompt + ', painting by Botticelli: Birth of Venus style with flowing graceful lines, wind-blown hair, soft pastel colors, ethereal lyrical beauty';
+            console.log('✅ Enhanced Botticelli grace added');
           } else {
-            console.log('ℹ️ Botticelli grace already in prompt (AI included it)');
+            console.log('ℹ️ Botticelli grace already in prompt');
           }
         }
         
@@ -3541,10 +3578,10 @@ export default async function handler(req, res) {
             selectedArtist.toUpperCase().trim().includes('RAFFAELLO')) {
           console.log('🎯 Raphael detected');
           if (!finalPrompt.includes('Madonna')) {
-            finalPrompt = finalPrompt + ', painting by Raphael, Madonna-style with PERFECT HARMONIOUS COMPOSITION and graceful balanced arrangement, serene gentle beauty with sweet tender expressions, soft rounded forms with fluid elegant contours, warm glowing colors with delicate flesh tones and rich drapery, classical Renaissance perfection with ideal proportions, peaceful tranquil atmosphere radiating divine grace, smooth refined brushwork with seamless transitions, sublime unity and lyrical beauty';
+            finalPrompt = finalPrompt + ', painting by Raphael: Madonna style with perfect harmonious composition, serene gentle beauty, soft rounded forms, warm glowing colors';
             console.log('✅ Enhanced Raphael harmony added');
           } else {
-            console.log('ℹ️ Raphael harmony already in prompt (AI included it)');
+            console.log('ℹ️ Raphael harmony already in prompt');
           }
         }
         
@@ -3553,10 +3590,10 @@ export default async function handler(req, res) {
             selectedArtist.toUpperCase().trim().includes('BUONARROTI')) {
           console.log('🎯 Michelangelo detected');
           if (!finalPrompt.includes('Sistine')) {
-            finalPrompt = finalPrompt + ', painting by Michelangelo, Sistine Chapel-style with SCULPTURAL MUSCULAR ANATOMY and heroic monumental figures, powerful athletic bodies with exaggerated musculature and anatomical perfection, dynamic twisting poses (contrapposto) with dramatic foreshortening, intense physical energy and spiritual tension, bold confident modeling with strong chiaroscuro, terribilità with awesome grandeur and sublime power, every form carved from living stone';
-            console.log('✅ Enhanced Michelangelo sculptural power added');
+            finalPrompt = finalPrompt + ', painting by Michelangelo: Sistine Chapel style with sculptural muscular anatomy, heroic monumental figures, dynamic twisting poses, powerful physical energy';
+            console.log('✅ Enhanced Michelangelo power added');
           } else {
-            console.log('ℹ️ Michelangelo power already in prompt (AI included it)');
+            console.log('ℹ️ Michelangelo power already in prompt');
           }
         }
         
@@ -3680,16 +3717,20 @@ export default async function handler(req, res) {
         }
         
         // 뭉크 선택시 실존적 불안 강화 (거장 + 표현주의)
+        // 단, Madonna 작품은 부드러운 스타일이므로 The Scream 추가 안 함
         if (selectedArtist.toUpperCase().trim().includes('MUNCH') || 
             selectedArtist.toUpperCase().trim().includes('EDVARD') ||
             selectedArtist.includes('뭉크') ||
             selectedArtist.includes('에드바르')) {
           console.log('🎯 Munch detected');
-          if (!finalPrompt.includes('The Scream')) {
-            finalPrompt = finalPrompt + ', painting by Edvard Munch, The Scream-style with DISTORTED ANGUISHED FORMS expressing existential dread and psychological horror, wavy undulating backgrounds radiating outward with oppressive tension, lurid unnatural colors of blood reds sickly yellows and ominous blues, elongated screaming figures with hands clutching face in terror, swirling sky and landscape pulsating with anxiety and cosmic despair, every line trembling with inner torment and profound isolation, raw emotional nakedness';
+          // Madonna는 부드러운 관능적 스타일이므로 The Scream 추가하지 않음
+          if (selectedWork && selectedWork.toLowerCase().includes('madonna')) {
+            console.log('ℹ️ Munch Madonna - skipping The Scream style (different mood)');
+          } else if (!finalPrompt.includes('The Scream')) {
+            finalPrompt = finalPrompt + ', painting by Edvard Munch: The Scream style with distorted anguished forms, wavy undulating backgrounds, lurid colors of blood reds and sickly yellows, existential dread atmosphere';
             console.log('✅ Enhanced Munch anguish added');
           } else {
-            console.log('ℹ️ Munch anguish already in prompt (AI included it)');
+            console.log('ℹ️ Munch anguish already in prompt');
           }
         }
         

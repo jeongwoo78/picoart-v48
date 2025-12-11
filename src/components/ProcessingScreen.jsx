@@ -146,11 +146,15 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       // 그리스로마
       'roman mosaic': '로마 모자이크(Roman Mosaic)',
       'greek sculpture': '그리스 조각(Greek Sculpture)',
+      'classical sculpture': '고대 조각(Classical Sculpture)',
       'pompeii fresco': '폼페이 프레스코(Pompeii Fresco)',
       // 중세
       'giotto': '지오토(Giotto di Bondone)',
       'byzantine': '비잔틴(Byzantine)',
       'gothic': '고딕(Gothic)',
+      'gothic stained glass': '고딕 스테인드글라스(Gothic Stained Glass)',
+      'islamic miniature': '이슬람 세밀화(Islamic Miniature)',
+      'islamic geometry': '이슬람 기하학(Islamic Geometry)',
       // 르네상스
       'leonardo': '레오나르도 다 빈치(Leonardo da Vinci)',
       'michelangelo': '미켈란젤로(Michelangelo)',
@@ -179,10 +183,12 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       // 인상주의
       'monet': '모네(Claude Monet)',
       'renoir': '르누아르(Pierre-Auguste Renoir)',
+      'pierre-auguste renoir': '르누아르(Pierre-Auguste Renoir)',
       'degas': '드가(Edgar Degas)',
       'manet': '마네(Édouard Manet)',
       'pissarro': '피사로(Camille Pissarro)',
       'sisley': '시슬레(Alfred Sisley)',
+      'caillebotte': '칼리보트(Gustave Caillebotte)',
       // 후기인상주의
       'van gogh': '반 고흐(Vincent van Gogh)',
       'cézanne': '세잔(Paul Cézanne)',
