@@ -1,4 +1,4 @@
-// PicoArt v78 - ResultScreen
+// PicoArt v79 - ResultScreen
 // 원클릭 교육자료 매칭: 단일변환과 동일한 workKeyMap 로직 사용
 // 교육자료 파일만 분리된 원클릭 전용 파일 사용
 // 2025-12-11 업데이트: 재시도 기능 추가
@@ -224,6 +224,28 @@ const ResultScreen = ({
           : '';
         await saveToGallery(result.resultUrl, styleName, categoryName);
         
+        // 교육자료 다시 로드 (재시도 성공 후)
+        console.log('🔄 재시도 성공 - 교육자료 다시 로드');
+        const workName = result.selected_work;
+        const artistName = result.aiSelectedArtist;
+        const category = failed.style?.category;
+        
+        if (workName && artistName && category) {
+          const key = getOneclickEducationKey(workName, artistName, category);
+          if (key) {
+            const educationData = category === 'movements' 
+              ? oneclickMovementsEducation[key]
+              : category === 'masters'
+              ? oneclickMastersEducation[key]
+              : oneclickOrientalEducation[key];
+            
+            if (educationData) {
+              console.log(`✅ 재시도 후 교육자료 로드: ${key}`);
+              setEducationText(educationData);
+            }
+          }
+        }
+        
         alert('재시도 성공!');
       } else {
         console.log(`❌ 재시도 실패: ${failed.style?.name} - ${result.error}`);
@@ -241,11 +263,11 @@ const ResultScreen = ({
 
   // ========== Effects ==========
   // aiSelectedArtist가 변경될 때마다 2차 교육 재생성
-  // 원클릭: currentIndex 변경 시에도 재생성
+  // 원클릭: currentIndex 변경 또는 currentResult 업데이트 시 재생성
   useEffect(() => {
     console.log('🎨 ResultScreen mounted or aiSelectedArtist changed');
     generate2ndEducation();
-  }, [aiSelectedArtist, currentIndex]);
+  }, [aiSelectedArtist, currentIndex, currentResult?.aiSelectedArtist, currentResult?.selected_work]);
 
   // 원클릭: 화면 이동 시 현재 결과 로그
   useEffect(() => {
@@ -1484,7 +1506,7 @@ const ResultScreen = ({
           <div className="fullTransform-nav">
             <button 
               onClick={() => setCurrentIndex(i => Math.max(0, i - 1))}
-              disabled={currentIndex === 0}
+              disabled={currentIndex === 0 || isRetrying}
               className="nav-btn"
             >
               ◀ 이전
@@ -1493,14 +1515,15 @@ const ResultScreen = ({
               {fullTransformResults.map((_, idx) => (
                 <button
                   key={idx}
-                  className={`nav-dot ${idx === currentIndex ? 'active' : ''}`}
-                  onClick={() => setCurrentIndex(idx)}
+                  className={`nav-dot ${idx === currentIndex ? 'active' : ''} ${isRetrying ? 'disabled' : ''}`}
+                  onClick={() => !isRetrying && setCurrentIndex(idx)}
+                  disabled={isRetrying}
                 />
               ))}
             </div>
             <button 
               onClick={() => setCurrentIndex(i => Math.min(fullTransformResults.length - 1, i + 1))}
-              disabled={currentIndex === fullTransformResults.length - 1}
+              disabled={currentIndex === fullTransformResults.length - 1 || isRetrying}
               className="nav-btn"
             >
               다음 ▶
@@ -1508,8 +1531,8 @@ const ResultScreen = ({
           </div>
         )}
 
-        {/* 재시도 버튼 (현재 보고 있는 결과가 실패한 경우에만 표시) */}
-        {isFullTransform && currentResult && !currentResult.success && (
+        {/* 재시도 버튼 (현재 보고 있는 결과가 실패한 경우 또는 재시도 중일 때 표시) */}
+        {isFullTransform && (isRetrying || (currentResult && !currentResult.success)) && (
           <div className="retry-section">
             {isRetrying ? (
               <div className="retry-in-progress">
