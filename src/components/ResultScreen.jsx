@@ -1565,7 +1565,7 @@ const ResultScreen = ({
                         : formatArtistName(displayArtist)
                     }
                   </span>
-                  {selectedStyle.category === 'neoclassicism_vs_romanticism_vs_realism' && aiSelectedArtist && (() => {
+                  {selectedStyle.id === 'neoclassicism_vs_romanticism_vs_realism' && aiSelectedArtist && (() => {
                     const movement = getSpecificMovement(aiSelectedArtist);
                     return movement ? (
                       <span className={`style-badge ${movement.color}`}>
@@ -1573,7 +1573,7 @@ const ResultScreen = ({
                       </span>
                     ) : null;
                   })()}
-                  {selectedStyle.category === 'modernism' && aiSelectedArtist && (() => {
+                  {selectedStyle.id === 'modernism' && aiSelectedArtist && (() => {
                     const movement = getModernismMovement(aiSelectedArtist);
                     return movement ? (
                       <span className={`style-badge ${movement.color}`}>
