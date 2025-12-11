@@ -247,6 +247,22 @@ const ResultScreen = ({
     generate2ndEducation();
   }, [aiSelectedArtist, currentIndex]);
 
+  // 원클릭: 화면 이동 시 현재 결과 로그
+  useEffect(() => {
+    if (isFullTransform && currentResult) {
+      console.log('========================================');
+      console.log(`📍 현재 화면: ${currentIndex + 1}/${results.length}`);
+      console.log(`   - 스타일: ${currentResult.style?.name}`);
+      console.log(`   - 성공 여부: ${currentResult.success ? '✅ 성공' : '❌ 실패'}`);
+      console.log(`   - aiSelectedArtist: ${currentResult.aiSelectedArtist}`);
+      console.log(`   - selected_work: ${currentResult.selected_work}`);
+      if (!currentResult.success) {
+        console.log(`   - 에러: ${currentResult.error}`);
+      }
+      console.log('========================================');
+    }
+  }, [currentIndex, isFullTransform, currentResult, results.length]);
+
 
   // ========== 원클릭용 키 매칭 (단일변환과 동일한 workKeyMap 사용) ==========
   const getOneclickEducationKey = (workName, artistName, category) => {
@@ -317,6 +333,7 @@ const ResultScreen = ({
         
         // 워홀
         'Marilyn Monroe': 'warhol-marilyn',
+        'Marilyn Monroe (마릴린 먼로)': 'warhol-marilyn',
         '마릴린 먼로': 'warhol-marilyn',
         'Marilyn': 'warhol-marilyn',
         'Campbell\'s Soup Cans': 'warhol-soup',
@@ -1506,13 +1523,13 @@ const ResultScreen = ({
               </div>
             ) : (
               <div className="retry-prompt">
-                <p className="fail-message">❌ 이 변환은 실패했습니다</p>
+                <p className="fail-message">변환에 실패하였습니다. 재시도 하세요.</p>
                 <button 
                   className="btn btn-retry"
                   onClick={() => handleRetrySingle(currentIndex)}
                 >
                   <span className="btn-icon">🔄</span>
-                  이 스타일 재시도 (무료)
+                  재시도
                 </button>
               </div>
             )}
