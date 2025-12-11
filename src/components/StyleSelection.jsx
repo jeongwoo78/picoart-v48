@@ -155,7 +155,7 @@ const StyleSelection = ({ onSelect }) => {
             
             {/* 전체 변환 버튼 */}
             <button 
-              className="full-transform-btn"
+              className="full-transform-btn movements"
               onClick={() => onSelect({ 
                 id: 'movements-all', 
                 name: '미술사조 전체 변환',
@@ -211,7 +211,7 @@ const StyleSelection = ({ onSelect }) => {
                 {/* 전체 변환 버튼 - 거장 */}
                 {mainCategory === 'masters' && (
                   <button 
-                    className="full-transform-btn"
+                    className="full-transform-btn masters"
                     onClick={() => onSelect({ 
                       id: 'masters-all', 
                       name: '거장 전체 변환',
@@ -231,7 +231,7 @@ const StyleSelection = ({ onSelect }) => {
                 {/* 전체 변환 버튼 - 동양화 */}
                 {mainCategory === 'oriental' && (
                   <button 
-                    className="full-transform-btn"
+                    className="full-transform-btn oriental"
                     onClick={() => onSelect({ 
                       id: 'oriental-all', 
                       name: '동양화 전체 변환',
@@ -475,7 +475,6 @@ const StyleSelection = ({ onSelect }) => {
         /* 전체 변환 버튼 */
         .full-transform-btn {
           width: 100%;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           border: none;
           border-radius: 16px;
           padding: 1.25rem 1.5rem;
@@ -485,12 +484,37 @@ const StyleSelection = ({ onSelect }) => {
           align-items: center;
           gap: 1rem;
           transition: all 0.3s;
-          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* 미술사조 - 하늘색 */
+        .full-transform-btn.movements {
+          background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+          box-shadow: 0 4px 15px rgba(79, 195, 247, 0.3);
+        }
+        .full-transform-btn.movements:hover {
+          box-shadow: 0 8px 25px rgba(79, 195, 247, 0.4);
+        }
+
+        /* 거장 - 주황색 */
+        .full-transform-btn.masters {
+          background: linear-gradient(135deg, #FFB74D 0%, #FFA726 100%);
+          box-shadow: 0 4px 15px rgba(255, 183, 77, 0.3);
+        }
+        .full-transform-btn.masters:hover {
+          box-shadow: 0 8px 25px rgba(255, 183, 77, 0.4);
+        }
+
+        /* 동양화 - 분홍색 */
+        .full-transform-btn.oriental {
+          background: linear-gradient(135deg, #F48FB1 0%, #F06292 100%);
+          box-shadow: 0 4px 15px rgba(244, 143, 177, 0.3);
+        }
+        .full-transform-btn.oriental:hover {
+          box-shadow: 0 8px 25px rgba(244, 143, 177, 0.4);
         }
 
         .full-transform-btn:hover {
           transform: translateY(-3px);
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
         }
 
         .full-transform-icon {

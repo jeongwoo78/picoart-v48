@@ -125,7 +125,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     
     if (category === 'movements') {
       console.log('🎓 Using oneclickMovementsPrimary');
-      return oneclickMovementsPrimary;
+      return { ...oneclickMovementsPrimary, title: '2,500년 서양미술사 관통' };
     } else if (category === 'masters') {
       console.log('🎓 Using oneclickMastersPrimary');
       return oneclickMastersPrimary;
@@ -134,6 +134,152 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       return oneclickOrientalPrimary;
     }
     return null;
+  };
+
+  // ========== 포맷 함수들 (ResultScreen과 통일) ==========
+  
+  // 화가명 포맷: 한글명(영문명)
+  const formatArtistName = (artistName) => {
+    if (!artistName) return '';
+    
+    const nameMap = {
+      // 야수파
+      'matisse': '마티스(Henri Matisse)',
+      'henri matisse': '마티스(Henri Matisse)',
+      'derain': '드랭(André Derain)',
+      'vlaminck': '블라맹크(Maurice de Vlaminck)',
+      // 표현주의
+      'munch': '뭉크(Edvard Munch)',
+      'kirchner': '키르히너(Ernst Ludwig Kirchner)',
+      'kandinsky': '칸딘스키(Wassily Kandinsky)',
+      'kokoschka': '코코슈카(Oskar Kokoschka)',
+      'schiele': '에곤 실레(Egon Schiele)',
+      // 인상주의
+      'monet': '모네(Claude Monet)',
+      'renoir': '르누아르(Pierre-Auguste Renoir)',
+      'degas': '드가(Edgar Degas)',
+      // 후기인상주의
+      'van gogh': '반 고흐(Vincent van Gogh)',
+      'cézanne': '세잔(Paul Cézanne)',
+      'cezanne': '세잔(Paul Cézanne)',
+      'gauguin': '고갱(Paul Gauguin)',
+      'seurat': '쇠라(Georges Seurat)',
+      // 입체주의/초현실/팝아트
+      'picasso': '피카소(Pablo Picasso)',
+      'magritte': '마그리트(René Magritte)',
+      'miro': '미로(Joan Miró)',
+      'chagall': '샤갈(Marc Chagall)',
+      'warhol': '워홀(Andy Warhol)',
+      'lichtenstein': '리히텐슈타인(Roy Lichtenstein)',
+      'haring': '키스 해링(Keith Haring)',
+      // 르네상스/바로크
+      'leonardo': '레오나르도 다 빈치(Leonardo da Vinci)',
+      'michelangelo': '미켈란젤로(Michelangelo)',
+      'raphael': '라파엘로(Raffaello Sanzio)',
+      'caravaggio': '카라바조(Caravaggio)',
+      'rembrandt': '렘브란트(Rembrandt van Rijn)',
+      'vermeer': '베르메르(Johannes Vermeer)',
+      // 거장
+      '반 고흐': '반 고흐(Vincent van Gogh)',
+      '클림트': '클림트(Gustav Klimt)',
+      '뭉크': '뭉크(Edvard Munch)',
+      '마티스': '마티스(Henri Matisse)',
+      '피카소': '피카소(Pablo Picasso)',
+      '프리다 칼로': '프리다 칼로(Frida Kahlo)',
+      '앤디 워홀': '워홀(Andy Warhol)'
+    };
+    
+    const normalized = artistName.toLowerCase().trim();
+    return nameMap[normalized] || nameMap[artistName] || artistName;
+  };
+
+  // 작품명 포맷: 한글명(영문명) - 거장용
+  const formatWorkName = (workName) => {
+    if (!workName) return '';
+    
+    const workMap = {
+      // 반 고흐
+      'The Starry Night': '별이 빛나는 밤(The Starry Night)',
+      'Starry Night': '별이 빛나는 밤(Starry Night)',
+      'Sunflowers': '해바라기(Sunflowers)',
+      'Self-Portrait': '자화상(Self-Portrait)',
+      // 클림트
+      'The Kiss': '키스(The Kiss)',
+      'The Tree of Life': '생명의 나무(The Tree of Life)',
+      'Judith': '유디트(Judith)',
+      'Judith I': '유디트 I(Judith I)',
+      // 뭉크
+      'The Scream': '절규(The Scream)',
+      'Madonna': '마돈나(Madonna)',
+      // 마티스
+      'The Dance': '춤(The Dance)',
+      'The Red Room': '붉은 방(The Red Room)',
+      'Woman with a Hat': '모자를 쓴 여인(Woman with a Hat)',
+      // 피카소
+      'Guernica': '게르니카(Guernica)',
+      'Weeping Woman': '우는 여인(Weeping Woman)',
+      "Les Demoiselles d'Avignon": "아비뇽의 처녀들(Les Demoiselles d'Avignon)",
+      // 프리다 칼로
+      'Me and My Parrots': '나와 앵무새(Me and My Parrots)',
+      'Self-Portrait with Parrots': '앵무새와 자화상(Self-Portrait with Parrots)',
+      'The Broken Column': '부러진 기둥(The Broken Column)',
+      'Self-Portrait with Thorn Necklace': '가시 목걸이 자화상(Self-Portrait with Thorn Necklace)',
+      'Self-Portrait with Monkeys': '원숭이와 자화상(Self-Portrait with Monkeys)',
+      'The Two Fridas': '두 명의 프리다(The Two Fridas)',
+      // 워홀
+      'Marilyn Monroe': '마릴린 먼로(Marilyn Monroe)',
+      'Marilyn': '마릴린(Marilyn)',
+      "Campbell's Soup Cans": "캠벨 수프 캔(Campbell's Soup Cans)"
+    };
+    
+    return workMap[workName] || workName;
+  };
+
+  // 동양화 스타일 포맷: 한글명(영문명)
+  const formatOrientalStyle = (styleName) => {
+    if (!styleName) return '';
+    
+    const orientalMap = {
+      '한국 전통화': '한국 민화(Korean Minhwa)',
+      'korean-genre': '한국 풍속화(Korean Genre)',
+      'Chinese Gongbi': '중국 공필화(Chinese Gongbi)',
+      'chinese-gongbi': '중국 공필화(Chinese Gongbi)',
+      '일본 우키요에': '일본 우키요에(Japanese Ukiyo-e)',
+      'japanese-ukiyoe': '일본 우키요에(Japanese Ukiyo-e)'
+    };
+    
+    const normalized = styleName?.toLowerCase?.().trim() || '';
+    
+    if (orientalMap[styleName]) return orientalMap[styleName];
+    if (orientalMap[normalized]) return orientalMap[normalized];
+    
+    // 부분 매칭
+    if (normalized.includes('korean') || normalized.includes('한국')) {
+      return '한국 민화(Korean Minhwa)';
+    }
+    if (normalized.includes('chinese') || normalized.includes('gongbi')) {
+      return '중국 공필화(Chinese Gongbi)';
+    }
+    if (normalized.includes('japanese') || normalized.includes('ukiyo')) {
+      return '일본 우키요에(Japanese Ukiyo-e)';
+    }
+    
+    return styleName;
+  };
+
+  // 카테고리별 부제 포맷
+  const getSubtitle = (result) => {
+    const cat = result?.style?.category;
+    const artist = result?.aiSelectedArtist;
+    const work = result?.selected_work;
+    
+    if (cat === 'masters' && work) {
+      return formatWorkName(work);
+    } else if (cat === 'oriental') {
+      return formatOrientalStyle(artist);
+    } else {
+      return formatArtistName(artist);
+    }
   };
 
   // 원클릭 2차 교육 (결과별) - 카테고리에 따라 분리된 파일 사용
@@ -474,6 +620,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
             {/* 1차 교육 */}
             {viewIndex === -1 && showEducation && getPrimaryEducation() && (
               <div className="edu-card primary">
+                <h3>{getPrimaryEducation().title}</h3>
                 <p>{getPrimaryEducation().content}</p>
                 {completedCount > 0 && <p className="hint">👆 완료된 결과를 확인하세요</p>}
               </div>
@@ -482,14 +629,13 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
             {/* 결과 미리보기 */}
             {viewIndex >= 0 && previewResult && (
               <div className="preview">
-                <div className="preview-header">{previewResult.style.name}</div>
                 <img src={previewResult.resultUrl} alt="" />
-                {previewResult.aiSelectedArtist && (
-                  <div className="ai-info">🤖 {previewResult.aiSelectedArtist}</div>
-                )}
+                <div className="preview-info">
+                  <div className="preview-style">{previewResult.style.name}</div>
+                  <div className="preview-subtitle">{getSubtitle(previewResult)}</div>
+                </div>
                 {previewEdu && (
                   <div className="edu-card secondary">
-                    <h4>{previewEdu.name}</h4>
                     <p>{previewEdu.content}</p>
                   </div>
                 )}
@@ -622,9 +768,10 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         .hint { color: #999; font-size: 12px; text-align: center; margin-top: 12px !important; }
         
         .preview { background: #f8f9fa; border-radius: 10px; overflow: hidden; margin: 16px 0; }
-        .preview-header { background: #667eea; color: white; padding: 10px; font-size: 14px; font-weight: 600; }
         .preview img { width: 100%; display: block; }
-        .ai-info { padding: 8px 12px; background: #e9ecef; font-size: 12px; color: #666; }
+        .preview-info { padding: 12px; text-align: center; }
+        .preview-style { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 4px; }
+        .preview-subtitle { font-size: 13px; color: #666; }
         
         .dots-nav {
           display: flex;
