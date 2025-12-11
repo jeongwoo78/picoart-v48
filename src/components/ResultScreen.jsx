@@ -975,38 +975,58 @@ const ResultScreen = ({
     if (!workName) return '대표작';
     
     // 이미 한글(영문) 형식이면 그대로 반환
-    if (workName.includes('(') && workName.includes(')')) {
-      return `《${workName.split('(')[0].trim()}》`;
+    if (workName.includes('(') && workName.includes(')') && !/^[A-Za-z]/.test(workName)) {
+      return workName;
     }
     
-    // 작품명 매핑
+    // 작품명 매핑 - 거장 전체 작품: 한글명(영문명) 형식
     const workMap = {
-      'Weeping Woman': '《우는 여인》(Weeping Woman)',
-      'weeping woman': '《우는 여인》(Weeping Woman)',
-      'The Scream': '《절규》(The Scream)',
-      'the scream': '《절규》(The Scream)',
-      'Starry Night': '《별이 빛나는 밤》(Starry Night)',
-      'starry night': '《별이 빛나는 밤》(Starry Night)',
-      'Water Lilies': '《수련》(Water Lilies)',
-      'water lilies': '《수련》(Water Lilies)',
-      'The Kiss': '《키스》(The Kiss)',
-      'the kiss': '《키스》(The Kiss)',
-      'Judith I': '《유디트 I》(Judith I)',
-      'judith i': '《유디트 I》(Judith I)',
-      'The Persistence of Memory': '《기억의 지속》(The Persistence of Memory)',
-      'Marilyn Monroe': '《마릴린 먼로》(Marilyn Monroe)',
-      'marilyn monroe': '《마릴린 먼로》(Marilyn Monroe)',
-      'Self-Portrait with Parrots': '《앵무새와 자화상》(Self-Portrait with Parrots)',
-      'The Two Fridas': '《두 명의 프리다》(The Two Fridas)'
+      // 반 고흐
+      'The Starry Night': '별이 빛나는 밤(The Starry Night)',
+      'Starry Night': '별이 빛나는 밤(Starry Night)',
+      'Sunflowers': '해바라기(Sunflowers)',
+      'Self-Portrait': '자화상(Self-Portrait)',
+      
+      // 클림트
+      'The Kiss': '키스(The Kiss)',
+      'The Tree of Life': '생명의 나무(The Tree of Life)',
+      'Judith': '유디트(Judith)',
+      'Judith I': '유디트 I(Judith I)',
+      
+      // 뭉크
+      'The Scream': '절규(The Scream)',
+      'Madonna': '마돈나(Madonna)',
+      
+      // 마티스
+      'The Dance': '춤(The Dance)',
+      'The Red Room': '붉은 방(The Red Room)',
+      'Woman with a Hat': '모자를 쓴 여인(Woman with a Hat)',
+      
+      // 피카소
+      'Guernica': '게르니카(Guernica)',
+      'Weeping Woman': '우는 여인(Weeping Woman)',
+      "Les Demoiselles d'Avignon": '아비뇽의 처녀들(Les Demoiselles d\'Avignon)',
+      
+      // 프리다 칼로
+      'Me and My Parrots': '나와 앵무새(Me and My Parrots)',
+      'Self-Portrait with Parrots': '앵무새와 자화상(Self-Portrait with Parrots)',
+      'The Broken Column': '부러진 기둥(The Broken Column)',
+      'Self-Portrait with Thorn Necklace': '가시 목걸이 자화상(Self-Portrait with Thorn Necklace)',
+      'Self-Portrait with Monkeys': '원숭이와 자화상(Self-Portrait with Monkeys)',
+      'The Two Fridas': '두 명의 프리다(The Two Fridas)',
+      
+      // 워홀
+      'Marilyn Monroe': '마릴린 먼로(Marilyn Monroe)',
+      'Marilyn': '마릴린(Marilyn)',
+      "Campbell's Soup Cans": '캠벨 수프 캔(Campbell\'s Soup Cans)'
     };
     
-    const normalized = workName.toLowerCase().trim();
-    if (workMap[normalized] || workMap[workName]) {
-      return workMap[normalized] || workMap[workName];
+    if (workMap[workName]) {
+      return workMap[workName];
     }
     
     // 매핑에 없으면 원본 반환
-    return `《${workName}》`;
+    return workName;
   };
 
 
