@@ -1,4 +1,4 @@
-// PicoArt v79 - ResultScreen
+// PicoArt v80 - ResultScreen
 // 원클릭 교육자료 매칭: 단일변환과 동일한 workKeyMap 로직 사용
 // 교육자료 파일만 분리된 원클릭 전용 파일 사용
 // 2025-12-11 업데이트: 재시도 기능 추가
@@ -970,6 +970,98 @@ const ResultScreen = ({
   };
 
 
+  // ========== 거장 작품명 포맷 ==========
+  const formatWorkName = (workName) => {
+    if (!workName) return '대표작';
+    
+    // 이미 한글(영문) 형식이면 그대로 반환
+    if (workName.includes('(') && workName.includes(')')) {
+      return `《${workName.split('(')[0].trim()}》`;
+    }
+    
+    // 작품명 매핑
+    const workMap = {
+      'Weeping Woman': '《우는 여인》(Weeping Woman)',
+      'weeping woman': '《우는 여인》(Weeping Woman)',
+      'The Scream': '《절규》(The Scream)',
+      'the scream': '《절규》(The Scream)',
+      'Starry Night': '《별이 빛나는 밤》(Starry Night)',
+      'starry night': '《별이 빛나는 밤》(Starry Night)',
+      'Water Lilies': '《수련》(Water Lilies)',
+      'water lilies': '《수련》(Water Lilies)',
+      'The Kiss': '《키스》(The Kiss)',
+      'the kiss': '《키스》(The Kiss)',
+      'Judith I': '《유디트 I》(Judith I)',
+      'judith i': '《유디트 I》(Judith I)',
+      'The Persistence of Memory': '《기억의 지속》(The Persistence of Memory)',
+      'Marilyn Monroe': '《마릴린 먼로》(Marilyn Monroe)',
+      'marilyn monroe': '《마릴린 먼로》(Marilyn Monroe)',
+      'Self-Portrait with Parrots': '《앵무새와 자화상》(Self-Portrait with Parrots)',
+      'The Two Fridas': '《두 명의 프리다》(The Two Fridas)'
+    };
+    
+    const normalized = workName.toLowerCase().trim();
+    if (workMap[normalized] || workMap[workName]) {
+      return workMap[normalized] || workMap[workName];
+    }
+    
+    // 매핑에 없으면 원본 반환
+    return `《${workName}》`;
+  };
+
+
+  // ========== 동양화 스타일명 포맷 통일 ==========
+  const formatOrientalStyle = (styleName) => {
+    if (!styleName) return '동양화 기법';
+    
+    const normalized = styleName.toLowerCase().trim();
+    
+    // 동양화 스타일 통일 매핑: 한글명(영문명)
+    const orientalMap = {
+      // 한국
+      '한국 전통화': '한국 민화(Korean Minhwa)',
+      'korean-genre': '한국 풍속화(Korean Genre)',
+      'korean-minhwa': '한국 민화(Korean Minhwa)',
+      'korean-jingyeong': '한국 진경산수(Korean Jingyeong)',
+      
+      // 중국
+      'chinese gongbi': '중국 공필화(Chinese Gongbi)',
+      'chinese-gongbi': '중국 공필화(Chinese Gongbi)',
+      'gongbi': '중국 공필화(Chinese Gongbi)',
+      'chinese-ink': '중국 수묵화(Chinese Ink)',
+      'chinese-huaniao': '중국 화조화(Chinese Huaniao)',
+      
+      // 일본
+      '일본 우키요에': '일본 우키요에(Japanese Ukiyo-e)',
+      'japanese-ukiyoe': '일본 우키요에(Japanese Ukiyo-e)',
+      'ukiyoe': '일본 우키요에(Japanese Ukiyo-e)',
+      'ukiyo-e': '일본 우키요에(Japanese Ukiyo-e)'
+    };
+    
+    // 정확한 매칭
+    if (orientalMap[styleName]) {
+      return orientalMap[styleName];
+    }
+    if (orientalMap[normalized]) {
+      return orientalMap[normalized];
+    }
+    
+    // 부분 매칭
+    if (normalized.includes('korean') || normalized.includes('한국')) {
+      return '한국 민화(Korean Minhwa)';
+    }
+    if (normalized.includes('chinese') || normalized.includes('gongbi') || normalized.includes('중국')) {
+      return '중국 공필화(Chinese Gongbi)';
+    }
+    if (normalized.includes('japanese') || normalized.includes('ukiyo') || normalized.includes('일본')) {
+      return '일본 우키요에(Japanese Ukiyo-e)';
+    }
+    
+    // 매핑에 없으면 원본 반환
+    return styleName;
+  };
+
+
   // ========== 화가 이름 한글(Full Name) 변환 ==========
   const formatArtistName = (artistName) => {
     if (!artistName) return '예술 스타일';
@@ -1083,6 +1175,30 @@ const ResultScreen = ({
       'wassily kandinsky': '칸딘스키(Wassily Kandinsky)',
       'kokoschka': '코코슈카(Oskar Kokoschka)',
       'oskar kokoschka': '코코슈카(Oskar Kokoschka)',
+      
+      // 입체주의
+      'picasso': '피카소(Pablo Picasso)',
+      'pablo picasso': '피카소(Pablo Picasso)',
+      
+      // 초현실주의
+      'magritte': '마그리트(René Magritte)',
+      'rené magritte': '마그리트(René Magritte)',
+      'rene magritte': '마그리트(René Magritte)',
+      'miro': '미로(Joan Miró)',
+      'miró': '미로(Joan Miró)',
+      'joan miro': '미로(Joan Miró)',
+      'joan miró': '미로(Joan Miró)',
+      'chagall': '샤갈(Marc Chagall)',
+      'marc chagall': '샤갈(Marc Chagall)',
+      
+      // 팝아트
+      'warhol': '워홀(Andy Warhol)',
+      'andy warhol': '워홀(Andy Warhol)',
+      'lichtenstein': '리히텐슈타인(Roy Lichtenstein)',
+      'roy lichtenstein': '리히텐슈타인(Roy Lichtenstein)',
+      'haring': '키스 해링(Keith Haring)',
+      'keith haring': '키스 해링(Keith Haring)',
+      'keith-haring': '키스 해링(Keith Haring)',
       
       // 동양화 - 한국
       'korean-jingyeong': '진경산수화(Korean True-View Landscape)',
@@ -1441,7 +1557,13 @@ const ResultScreen = ({
                 <h2>{isFullTransform ? (currentResult?.style?.name || selectedStyle.name) : selectedStyle.name}</h2>
                 <p className="technique-subtitle">
                   <span className="artist-name">
-                    {formatArtistName(displayArtist)}
+                    {/* 거장: 작품명 표시, 동양화: 기법명 통일, 그 외: 화가명 */}
+                    {selectedStyle.category === 'masters' && displayWork
+                      ? formatWorkName(displayWork)
+                      : selectedStyle.category === 'oriental'
+                        ? formatOrientalStyle(displayArtist)
+                        : formatArtistName(displayArtist)
+                    }
                   </span>
                   {selectedStyle.category === 'neoclassicism_vs_romanticism_vs_realism' && aiSelectedArtist && (() => {
                     const movement = getSpecificMovement(aiSelectedArtist);

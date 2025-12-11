@@ -1033,3 +1033,20 @@ body {
     width: 100%;
   }
 }
+
+/* Card Header - 왼쪽 정렬 */
+.card-header {
+  text-align: left;
+}
+
+.card-header h2 {
+  text-align: left;
+}
+
+.card-header .technique-subtitle {
+  text-align: left;
+}
+
+.card-header .artist-name {
+  text-align: left;
+}
