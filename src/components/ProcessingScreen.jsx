@@ -41,7 +41,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
       const results = [];
       for (let i = 0; i < styles.length; i++) {
         const style = styles[i]; // 공통 데이터에서 가져온 스타일 (category 포함)
-        setStatusText(`[${i + 1}/${totalCount}] ${style.name} 변환 중...`);
+        setStatusText(`[${i}/${totalCount}] ${style.name} 변환 중...`);
         
         // 단일 변환과 동일하게 호출!
         const result = await processSingleStyle(style, i, totalCount);
@@ -85,7 +85,7 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         null,
         (progressText) => {
           if (total > 1) {
-            setStatusText(`[${index + 1}/${total}] ${progressText}`);
+            setStatusText(`[${index}/${total}] ${progressText}`);
           } else {
             setStatusText(progressText);
           }
@@ -447,17 +447,26 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
     // 미술사조: API 반환값 → 교육자료 키 매핑
     if (resultCategory === 'movements' && artistName) {
       const movementsKeyMap = {
-        // 고대
+        // 고대 (대소문자 모두)
         'Classical Sculpture': 'ancient-greek-sculpture',
+        'CLASSICAL SCULPTURE': 'ancient-greek-sculpture',
         'Greek Sculpture': 'ancient-greek-sculpture',
+        'GREEK SCULPTURE': 'ancient-greek-sculpture',
         'Roman Mosaic': 'roman-mosaic',
-        // 중세
+        'ROMAN MOSAIC': 'roman-mosaic',
+        // 중세 (대소문자 모두)
         'Byzantine': 'byzantine',
+        'BYZANTINE': 'byzantine',
         'Byzantine Mosaic': 'byzantine',
+        'BYZANTINE MOSAIC': 'byzantine',
         'Gothic': 'gothic',
+        'GOTHIC': 'gothic',
         'Gothic Stained Glass': 'gothic',
+        'GOTHIC STAINED GLASS': 'gothic',
         'Islamic Miniature': 'islamic-miniature',
+        'ISLAMIC MINIATURE': 'islamic-miniature',
         'Islamic Geometry': 'islamic-miniature',
+        'ISLAMIC GEOMETRY': 'islamic-miniature',
         // 르네상스
         'Leonardo da Vinci': 'leonardo',
         'LEONARDO': 'leonardo',
@@ -481,6 +490,8 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
         'VELÁZQUEZ': 'velazquez',
         'Velazquez': 'velazquez',
         'VELAZQUEZ': 'velazquez',
+        'Rubens': 'rubens',
+        'RUBENS': 'rubens',
         // 로코코
         'Watteau': 'watteau',
         'WATTEAU': 'watteau',
@@ -610,19 +621,26 @@ const ProcessingScreen = ({ photo, selectedStyle, onComplete }) => {
   
   const handleBackToEducation = () => setViewIndex(-1);
 
+  const [touchStartY, setTouchStartY] = useState(0);
+
   const handleTouchStart = (e) => {
     if (!isFullTransform) return;
     setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
   };
 
   const handleTouchEnd = (e) => {
     if (!isFullTransform || !touchStartX) return;
-    const diff = touchStartX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0 && viewIndex < completedCount - 1) setViewIndex(v => v + 1);
-      if (diff < 0 && viewIndex > -1) setViewIndex(v => v - 1);
+    const diffX = touchStartX - e.changedTouches[0].clientX;
+    const diffY = touchStartY - e.changedTouches[0].clientY;
+    
+    // 수평 스와이프만 인식 (X축 이동이 Y축보다 커야 함)
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0 && viewIndex < completedCount - 1) setViewIndex(v => v + 1);
+      if (diffX < 0 && viewIndex > -1) setViewIndex(v => v - 1);
     }
     setTouchStartX(0);
+    setTouchStartY(0);
   };
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));

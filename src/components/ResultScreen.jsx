@@ -31,6 +31,10 @@ const ResultScreen = ({
   const isFullTransform = fullTransformResults && fullTransformResults.length > 0;
   const [currentIndex, setCurrentIndex] = useState(0);
   
+  // ========== 스와이프 ==========
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+  
   // ========== 재시도 관련 ==========
   const [results, setResults] = useState(fullTransformResults || []);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -1525,10 +1529,40 @@ const ResultScreen = ({
   };
 
 
+  // ========== 스와이프 핸들러 (원클릭) ==========
+  const handleTouchStart = (e) => {
+    if (!isFullTransform || isRetrying) return;
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isFullTransform || isRetrying || !touchStartX) return;
+    const diffX = touchStartX - e.changedTouches[0].clientX;
+    const diffY = touchStartY - e.changedTouches[0].clientY;
+    
+    // 수평 스와이프만 인식 (X축 이동이 Y축보다 커야 함)
+    if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0 && currentIndex < results.length - 1) {
+        setCurrentIndex(i => i + 1);  // 왼쪽 스와이프 → 다음
+      }
+      if (diffX < 0 && currentIndex > 0) {
+        setCurrentIndex(i => i - 1);  // 오른쪽 스와이프 → 이전
+      }
+    }
+    setTouchStartX(0);
+    setTouchStartY(0);
+  };
+
+
   // ========== Render ==========
   return (
     <div className="result-screen">
-      <div className="result-container">
+      <div 
+        className="result-container"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         
         {/* Header */}
         <div className="result-header">
